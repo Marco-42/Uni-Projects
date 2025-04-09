@@ -10,6 +10,7 @@ import statistics
 import matplotlib.cm as cm
 import matplotlib.mlab as mlab
 from matplotlib.ticker import LinearLocator
+import matplotlib.scale as mscale
 
 # settaggio globale grafici
 plt.style.use(hep.style.ROOT)
@@ -49,11 +50,18 @@ def fitf(x, m, q):
     """m  -  q"""
     return m*x + q
 
+def fitf_norm(x, m, q):
+    """m  -  q"""
+    return (m*x + q)*2/np.pi
+
 def fit_nolin_TS(x, f):
     return 1/np.sqrt(1 + (x/f)**2)
 
 def fit_nolin_phase(x, f):
     return np.arctan(x/f)
+
+def fit_nolin_phase_norm(x, f):
+    return np.arctan(x/f)*2/np.pi
 
 def computing_R_err(R):
 
@@ -101,7 +109,8 @@ Tscale = 25  # mus
 
 # Assumed reading errors
 letturaV = Vscale*2/(np.sqrt(24)*25)
-letturaT = Tscale*2/(np.sqrt(24)*25)
+#letturaT = Tscale*2/(np.sqrt(24)*25)
+letturaT = Tscale*2/(np.sqrt(12)*25)
 errscalaV = 1.5/100
 
 # definition of errors array [x and y errorbars]
@@ -146,10 +155,10 @@ m_TS, q_TS = popt_TS
 em_TS, eq_TS = np.sqrt(np.diag(pcov_TS))
 
 # Fitting the phase
-popt_phase, pcov_phase = curve_fit(fitf, freq, phase, p0=[m_init, q_init], method='lm', sigma=phase_err, absolute_sigma=True)
+popt_phase, pcov_phase = curve_fit(fitf_norm, freq, phase, p0=[m_init, q_init], method='lm', sigma=phase_err, absolute_sigma=True)
 
 # Computing the residual
-residual_phase = phase - fitf(freq, *popt_phase)
+residual_phase = phase - fitf_norm(freq, *popt_phase)
 
 # variables error and chi2
 perr_phase = np.sqrt(np.diag(pcov_phase))
@@ -195,7 +204,7 @@ fig, ax = plt.subplots(3, 1, figsize=(6.5, 9), sharex=True, constrained_layout=T
 ax[0].errorbar(freq,TS,xerr=freq_err, yerr=TS_err, fmt='o', label=r'TS Data',ms=2,color='black')
 ax[0].plot(freq_fit, fitf(freq_fit, *popt_TS), label='TS linear fit', linestyle='--', color='red')
 ax[0].errorbar(freq,phase,xerr=freq_err, yerr=phase_err, fmt='o', label=r'Phase Data',ms=2,color='blue')
-ax[0].plot(freq_fit, fitf(freq_fit, *popt_phase), label='Phase linear fit', linestyle='--', color='blue')
+ax[0].plot(freq_fit, fitf_norm(freq_fit, *popt_phase), label='Phase linear fit', linestyle='--', color='blue')
 
 ax[0].legend(loc='upper left', fontsize = 15)
 
@@ -259,14 +268,15 @@ time_scale = np.array(data[5])
 
 # Computing phase
 phase_not_norm = 2*np.pi*freq*time/1000
-phase = phase_not_norm
+phase = phase_not_norm*2/np.pi
 
 # Number of points to fit
 N = len(freq)
 
 # Assumed reading errors
 letturaV = Vout_scale*2/(np.sqrt(24)*25)
-letturaT = time_scale*2/(np.sqrt(24)*25)
+#letturaT = time_scale*2/(np.sqrt(24)*25)
+letturaT = time_scale*2/(np.sqrt(12)*25)
 errscalaV = 1.5/100
 
 # definition of errors array [x and y errorbars]
@@ -276,26 +286,26 @@ eVin = np.sqrt((letturaV)**2 + ((errscalaV * Vin)**2))
 
 # Computing phase errors
 phase_err_not_norm = np.sqrt(2*np.pi*((freq_err*time)**2 + (freq*letturaT)**2))/1000
-phase_err = phase_err_not_norm
+phase_err = phase_err_not_norm*2/np.pi
 
 # defining the Transfer function 
 TS = Vout/Vin
 
 # defining the error of the Transfer function
-TS_err = np.sqrt((eVout/Vin)**2 + (Vout*eVin/(Vin**2))**2)
+TS_err = TS*np.sqrt((letturaV/Vin)**2 + (letturaV/Vout)**2 + 2*(errscalaV*TS)**2)
 
 # Limits for the fit function
 x_min = min(freq)
 x_max = max(freq)
+
+# defining the x points for fit
+freq_fit = np.linspace(x_min, x_max, 1000)
 
 # fitting the Transfer function 
 popt_TS, pcov_TS = curve_fit(fit_nolin_TS, freq, TS, p0=[a_init], method='lm', sigma=TS_err, absolute_sigma=True)
 
 # Computing the residual 
 residual_TS = TS - fit_nolin_TS(freq, *popt_TS)
-
-# defining the x - axis for the plot
-freq_fit = np.linspace(min(freq), max(freq), 1000)
 
 # variables error and chi2
 perr_TS = np.sqrt(np.diag(pcov_TS))
@@ -306,13 +316,13 @@ df = N - 2
 
 # fitting parameters and errors
 a_TS = popt_TS[0]
-ea_TS = pcov_TS[0, 0]
+ea_TS = np.sqrt(pcov_TS[0, 0])
 
 # Fitting the phase
-popt_phase, pcov_phase = curve_fit(fit_nolin_phase, freq, phase, p0=[a_init], method='lm', sigma=phase_err, absolute_sigma=True)
+popt_phase, pcov_phase = curve_fit(fit_nolin_phase_norm, freq, phase, p0=[a_init], method='lm', sigma=phase_err, absolute_sigma=True)
 
 # Computing the residual
-residual_phase = phase - fit_nolin_phase(freq, *popt_phase)
+residual_phase = phase - fit_nolin_phase_norm(freq, *popt_phase)
 
 # variables error and chi2
 perr_phase = np.sqrt(np.diag(pcov_phase))
@@ -320,7 +330,7 @@ chisq_phase = np.sum((residual_phase/phase_err)**2)
 
 # fitting parameters and errors
 a_phase = popt_phase[0]
-ea_phase = pcov_phase[0, 0]
+ea_phase = np.sqrt(pcov_phase[0, 0])
 
 # calculate the residuals error by quadratic sum using the variance theorem
 #TS_residual_err = np.sqrt(pow(TS_err, 2) + pow(eq_TS, 2) + pow(freq*em_TS, 2))
@@ -354,11 +364,14 @@ f_phase_err = ea_phase
 # defining the plot
 fig, ax = plt.subplots(3, 1, figsize=(6.5, 9), sharex=True, constrained_layout=True, height_ratios=[2, 1, 1])
 
+ax[0].set_xscale('log')
+ax[1].set_xscale('log')
+
 # defining points and fit function 
 ax[0].errorbar(freq,TS,xerr=freq_err, yerr=TS_err, fmt='o', label=r'TS Data',ms=2,color='black')
 ax[0].plot(freq_fit, fit_nolin_TS(freq_fit, *popt_TS), label='TS linear fit', linestyle='--', color='red')
 ax[0].errorbar(freq,phase,xerr=freq_err, yerr=phase_err, fmt='o', label=r'Phase Data',ms=2,color='blue')
-ax[0].plot(freq_fit, fit_nolin_phase(freq_fit, *popt_phase), label='Phase linear fit', linestyle='--', color='blue')
+ax[0].plot(freq_fit, fit_nolin_phase_norm(freq_fit, *popt_phase), label='Phase linear fit', linestyle='--', color='blue')
 
 # plotting the residual graph(in this case only y - residuals)
 ax[1].errorbar(freq, residual_TS,yerr=TS_residual_err, fmt='o', label=r'TS residual',ms=2,color='black')
@@ -379,16 +392,16 @@ ax[2].set_xlabel(r'$Frequency$ [$KHz$]', size=15)
 
 # Dynamic text position for f_TS and f_phase
 y_min, y_max = ax[0].get_ylim() 
-text_y1 = y_max - 0.90* (y_max - y_min)  # vetical position under 90% 
-text_y2 = y_max - 0.78* (y_max - y_min)  # vertical position under 78%
+text_y1 = y_max - 0.70* (y_max - y_min)  # vetical position under 70% 
+text_y2 = y_max - 0.558* (y_max - y_min)  # vertical position under 55%
 
 # Plotting some text
-ax[0].text(0.95 * ax[0].get_xlim()[1], text_y1,  # Orizontal position 95% 
+ax[0].text(0.75 * ax[0].get_xlim()[1], text_y1,  # Orizontal position 75% 
            r'$f_{{TS}}$ = {fts:.2f} $\pm$ {efts:.2f} $KHz$'.format(fts=a_TS, efts=ea_TS),
            size=13, ha='right')  
 
-ax[0].text(0.95 * ax[0].get_xlim()[1], text_y2,  # Orizontal position 95% 
-           r'$f_{{phase}}$ = {fph:.2f} $\pm$ {efph:.2f} $KHz$'.format(fph=a_phase, efph=ea_phase),
+ax[0].text(0.75 * ax[0].get_xlim()[1], text_y2,  # Orizontal position 75% 
+           r'$f_{{phase}}$ = {fph:.2f} $\pm$ {efph:.3f} $KHz$'.format(fph=a_phase, efph=ea_phase),
            size=13, ha='right') 
 
 # aumatic layout configuration
