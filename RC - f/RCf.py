@@ -566,7 +566,7 @@ ax[0].text(-0.35, -8, r'$q$ = {e:.1f} $\pm$ {f:.1f}'.format(e=A1q, f = eA1q), si
 ax[0].text(-0.35, -11, r'$r_{{\, q \, / \, 0}}$ = {e:.1f}'.format(e=r_A1), size=12)
 
 # setting limit for y axis and the axis labels
-ax[0].set_ylabel(r'$log|A|\, [\, dB \, ]$', size = 15)
+ax[0].set_ylabel(r'$|A|\, [\, dB \, ]$', size = 15)
 ax[1].set_ylabel(r'$log|A|_{\,\text{Residuals}}$', size = 15)
 ax[1].set_xlabel(r'$log\,f$', size = 13)
 ax[0].set_xlabel(r'$log\,f$', size = 13)
