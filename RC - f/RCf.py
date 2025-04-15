@@ -75,9 +75,7 @@ def computing_R_err(R):
         return np.sqrt(pow(R*0.07/100, 2)/3 + pow(0.1*8, 2)/3)
 
 def computing_C_err(C):
-    if(C < 10e-9 and C > 0):
-        return np.sqrt(pow(C*0.01, 2)/3 + pow(0.01e-9*8, 2)/3)
-    if(C> 10e-9 and C < 100e-9):
+    if(C < 100e-9 and C > 0):
         return np.sqrt(pow(C*0.01, 2)/3 + pow(0.01e-9*8, 2)/3)
 
 def compatibility(x, y, x_err, y_err):
@@ -161,7 +159,8 @@ freq_fit = np.linspace(min(freq), max(freq), 1000)
 
 # variables error and chi2
 perr_TS = np.sqrt(np.diag(pcov_TS))
-chisq_TS = np.sum((residual_TS/TS_err)**2)
+chi2_TS = np.sum((residual_TS/TS_err)**2)
+
 
 # degrees of freedom
 df = N - 2
@@ -178,7 +177,7 @@ residual_phase = phase_not_norm - fitf(freq, *popt_phase)
 
 # variables error and chi2
 perr_phase = np.sqrt(np.diag(pcov_phase))
-chisq_phase = np.sum((residual_phase/phase_err)**2)
+chi2_phase = np.sum((residual_phase/phase_err)**2)
 
 # fitting parameters and errors
 m_phase, q_phase = popt_phase*2/np.pi
@@ -214,11 +213,11 @@ f_phase_err = np.sqrt((eq_phase/m_phase)**2 + ((1/np.sqrt(2) - q_phase)*em_phase
 
 # Plotting the local fit
 # defining the plot
-fig, ax = plt.subplots(3, 1, figsize=(6.5, 9), sharex=True, constrained_layout=True, height_ratios=[2, 0.7, 0.7])
+fig, ax = plt.subplots(3, 1, figsize=(6.5, 7.5), sharex=True, constrained_layout=True, height_ratios=[2, 0.5, 0.5])
 
 # defining points and fit function 
-ax[0].errorbar(freq,TS,xerr=freq_err, yerr=TS_err, fmt='o', label=r'TF Data',ms=2,color='darkcyan', zorder = 1, lw =1.5)
-ax[0].plot(freq_fit, fitf(freq_fit, *popt_TS), label='TF linear fit', linestyle='--', color='darkorange', lw = 1, zorder = 0)
+ax[0].errorbar(freq,TS,xerr=freq_err, yerr=TS_err, fmt='o', label=r'Amp Data',ms=2,color='darkcyan', zorder = 1, lw =1.5)
+ax[0].plot(freq_fit, fitf(freq_fit, *popt_TS), label='Amp linear fit', linestyle='--', color='darkorange', lw = 1, zorder = 0)
 ax[0].errorbar(freq,phase,xerr=freq_err, yerr=phase_err, fmt='o', label=r'Phase Data',ms=2,color='black', zorder = 1, lw = 1.5)
 ax[0].plot(freq_fit, fitf_norm(freq_fit, *popt_phase), label='Phase linear fit', linestyle='--', color='red', lw = 1, zorder = 0)
 
@@ -226,7 +225,7 @@ ax[0].plot(freq_fit, fitf_norm(freq_fit, *popt_phase), label='Phase linear fit',
 ax[0].legend(loc='best', fontsize = 12)
 
 # plotting the residual graph(in this case only y - residuals)
-ax[1].errorbar(freq, residual_TS,yerr=TS_residual_err, fmt='o', label=r'TF residual',ms=2,color='darkcyan', lw = 1.5, zorder = 1)
+ax[1].errorbar(freq, residual_TS,yerr=TS_residual_err, fmt='o', label=r'Amp residual',ms=2,color='darkcyan', lw = 1.5, zorder = 1)
 ax[2].errorbar(freq, residual_phase, yerr=phase_residual_err, fmt='o', label=r'Phase Residual', ms=2, color='black', lw = 1.5, zorder = 1)
 
 # plotting the weighted mean of residuals
@@ -249,16 +248,26 @@ ax[2].set_xlabel(r'$Frequency$ [$KHz$]', size=13)
 
 # Dynamic text position for f_TS and f_phase
 y_min, y_max = ax[0].get_ylim() 
-text_y1 = y_max - 0.86* (y_max - y_min)  # vetical position under 86% 
-text_y2 = y_max - 0.77* (y_max - y_min)  # vertical position under 77%
+text_y1 = y_max - 0.65* (y_max - y_min)  # vetical position under 60% 
+text_y2 = y_max - 0.73* (y_max - y_min)  # vertical position under 70%
+text_y3 = y_max - 0.81* (y_max - y_min)  # vertical position under 80%
+text_y4 = y_max - 0.89* (y_max - y_min)  # vertical position under 90%
 
 # Plotting some text
 ax[0].text(0.88 * ax[0].get_xlim()[1], text_y1,  # Orizontal position 88% 
-           r'$f_{{TF}}$ = {fts:.2f} $\pm$ {efts:.2f} $KHz$'.format(fts=f_TS, efts=f_TS_err),
+           r'$f_{{Amp}}$ = {fts:.2f} $\pm$ {efts:.2f} $KHz$'.format(fts=f_TS, efts=f_TS_err),
            size=13)  
 
 ax[0].text(0.88 * ax[0].get_xlim()[1], text_y2,  # Orizontal position 88% 
            r'$f_{{phase}}$ = {fph:.1f} $\pm$ {efph:.1f} $KHz$'.format(fph=f_phase, efph=f_phase_err),
+           size=13) 
+
+ax[0].text(0.88 * ax[0].get_xlim()[1], text_y3,  # Orizontal position 88% 
+           r'$\chi^2_{{\text{{Amp}}}} \, / \, DOF$ = {fph:.1f} / {efph:.0f}'.format(fph=chi2_TS, efph=df),
+           size=13) 
+
+ax[0].text(0.88 * ax[0].get_xlim()[1], text_y4,  # Orizontal position 88% 
+           r'$\chi^2_{{\text{{Phase}}}} \, / \, DOF$ = {fph:.1f} / {efph:.0f}'.format(fph=chi2_phase, efph=df),
            size=13) 
 
 # aumatic layout configuration
@@ -338,10 +347,10 @@ residual_TS = TS - fit_nolin_TS(freq, *popt_TS)
 
 # variables error and chi2
 perr_TS = np.sqrt(np.diag(pcov_TS))
-chisq_TS = np.sum((residual_TS/TS_err)**2)
+chi2_TS_nolin = np.sum((residual_TS/TS_err)**2)
 
 # degrees of freedom
-df = N - 2
+df = N - 1
 
 # fitting parameters and errors
 a_TS = popt_TS[0]
@@ -355,7 +364,7 @@ residual_phase = phase - fit_nolin_phase_norm(freq, *popt_phase)
 
 # variables error and chi2
 perr_phase = np.sqrt(np.diag(pcov_phase))
-chisq_phase = np.sum((residual_phase/phase_err)**2)
+chi2_phase_nolin = np.sum((residual_phase/phase_err)**2)
 
 # fitting parameters and errors
 a_phase = popt_phase[0]
@@ -391,19 +400,19 @@ f_phase_nolin_err = ea_phase
 
 # Plotting the local fit
 # defining the plot
-fig, ax = plt.subplots(3, 1, figsize=(6.5, 9), sharex=True, constrained_layout=True, height_ratios=[2, 0.7, 0.7])
+fig, ax = plt.subplots(3, 1, figsize=(6.5, 7.5), sharex=True, constrained_layout=True, height_ratios=[2, 0.7, 0.7])
 
 ax[0].set_xscale('log')
 ax[1].set_xscale('log')
 
 # defining points and fit function 
-ax[0].errorbar(freq,TS,xerr=freq_err, yerr=TS_err, fmt='o', label=r'TF Data',ms=2,color='darkcyan', zorder = 1, lw =1.5)
-ax[0].plot(freq_fit, fit_nolin_TS(freq_fit, *popt_TS), label='TF fit', linestyle='--', color='darkorange', lw = 1, zorder = 0)
+ax[0].errorbar(freq,TS,xerr=freq_err, yerr=TS_err, fmt='o', label=r'Amp Data',ms=2,color='darkcyan', zorder = 1, lw =1.5)
+ax[0].plot(freq_fit, fit_nolin_TS(freq_fit, *popt_TS), label='Amp fit', linestyle='--', color='darkorange', lw = 1, zorder = 0)
 ax[0].errorbar(freq,phase,xerr=freq_err, yerr=phase_err, fmt='o', label=r'Phase Data',ms=2,color='black', zorder = 1, lw = 1.5)
 ax[0].plot(freq_fit, fit_nolin_phase_norm(freq_fit, *popt_phase), label='Phase fit', linestyle='--', color='red', lw = 1, zorder = 0)
 
 # plotting the residual graph(in this case only y - residuals)
-ax[1].errorbar(freq, residual_TS,yerr=TS_residual_err, fmt='o', label=r'TF residual',ms=2,color='darkcyan', lw = 1.5, zorder = 1)
+ax[1].errorbar(freq, residual_TS,yerr=TS_residual_err, fmt='o', label=r'Amp residual',ms=2,color='darkcyan', lw = 1.5, zorder = 1)
 ax[2].errorbar(freq, residual_phase, yerr=phase_residual_err, fmt='o', label=r'Phase Residual', ms=2,  color='black', lw = 1.5, zorder = 1)
 
 # plotting the weighted mean of residuals
@@ -431,17 +440,24 @@ ax[2].set_ylabel(r'$\Phi_{\,\text{Residuals}}$', size=15)
 ax[2].set_xlabel(r'$Frequency$ [$KHz$]', size=13)
 
 # Plotting the legend
-ax[0].legend(loc='best', fontsize = 12)
+ax[0].legend(loc='best', fontsize = 12, ncol = 2)
 
 # Dynamic text position for f_TS and f_phase
 y_min, y_max = ax[0].get_ylim() 
-text_y1 = y_max - 0.91* (y_max - y_min)  # vetical position under 91% 
-text_y2 = y_max - 0.91* (y_max - y_min)  # vertical position under 91%
+text_y1 = y_max - 0.25* (y_max - y_min)  # vetical position under 91% 
+text_y2 = y_max - 0.35* (y_max - y_min)  # vertical position under 91%
+text_y3 = y_max - 0.45* (y_max - y_min)  # vertical position under 91%
+text_y4 = y_max - 0.55* (y_max - y_min)  # vertical position under 91%
 
 # Plotting some text
-ax[0].text(0.7, text_y1, r'$f_{{TS}}$ = {fts:.2f} $\pm$ {efts:.2f} $KHz$'.format(fts=a_TS, efts=ea_TS),size=12)  
-ax[0].text(15, text_y2, r'$f_{{phase}}$ = {fph:.2f} $\pm$ {efph:.3f} $KHz$'.format(fph=a_phase, efph=ea_phase),size=12) 
-
+ax[0].text(23, text_y1, r'$f_{{Amp}}$ = {fts:.2f} $\pm$ {efts:.2f} $KHz$'.format(fts=a_TS, efts=ea_TS),size=13)  
+ax[0].text(23, text_y2, r'$f_{{phase}}$ = {fph:.2f} $\pm$ {efph:.3f} $KHz$'.format(fph=a_phase, efph=ea_phase),size=13) 
+ax[0].text(23, text_y3,  # Orizontal position 88% 
+           r'$\chi^2_{{\text{{Amp}}}} \, / \, DOF$ = {fph:.1f} / {efph:.0f}'.format(fph=chi2_TS_nolin, efph=df),
+           size=13) 
+ax[0].text(23, text_y4,  # Orizontal position 88% 
+           r'$\chi^2_{{\text{{Phase}}}} \, / \, DOF$ = {fph:.1f} / {efph:.0f}'.format(fph=chi2_phase_nolin, efph=df),
+           size=13) 
 # aumatic layout configuration
 #fig.tight_layout()
 
@@ -491,7 +507,7 @@ log_freq_fit = np.linspace(min(log_freq), max(log_freq), 1000)
 
 # variables error and chi2
 perr_log_TS = np.sqrt(np.diag(pcov_log_TS))
-chisq_log_TS = np.sum((residual_TS/TS_err)**2)
+chi2_log_TS = np.sum((residual_TS/TS_err)**2)
 
 # degrees of freedom
 df = N - 2
@@ -533,13 +549,13 @@ y_fit_down = fitf(log_freq_fit[log_freq_fit > limit-0.2]+0.1, m_log_TS + em_log_
 fig, ax = plt.subplots(2, 1, figsize=(6.5, 6.5), sharex=True, constrained_layout=True, height_ratios=[2, 0.7])
 
 # defining points and fit function 
-ax[0].errorbar(log_freq,log_TS,xerr=0, yerr = log_TS_err, fmt='o', label=r'TF Data',ms=2,color='black', zorder = 2, lw =1.5)
-ax[0].plot(log_freq_fit, fitf(log_freq_fit, *popt_log_TS), label=r'Linear fit $f \, > \, f_{TF}$', linestyle='--', color='red', lw = 1, zorder = 1)
-ax[0].plot(log_freq_fit, np.full(len(log_freq_fit), *popt_A1), label=r'Linear fit $f \, > \, f_{TF}$', linestyle='--', color='darkorange', lw = 1, zorder = 1)
+ax[0].errorbar(log_freq,log_TS,xerr=0, yerr = log_TS_err, fmt='o', label=r'Amp Data',ms=2,color='black', zorder = 2, lw =1.5)
+ax[0].plot(log_freq_fit, fitf(log_freq_fit, *popt_log_TS), label=r'Linear fit $f \, > \, f_{Amp}$', linestyle='--', color='red', lw = 1, zorder = 1)
+ax[0].plot(log_freq_fit, np.full(len(log_freq_fit), *popt_A1), label=r'Linear fit $f \, > \, f_{Amp}$', linestyle='--', color='darkorange', lw = 1, zorder = 1)
 ax[0].fill_between(log_freq_fit[log_freq_fit > limit-0.2]+0.1, y_fit_down, y_fit_upper, color='gold', alpha=0.4, label = r'$\pm \, 1\sigma$ deviation', zorder = 0)
 
 # plotting the residual graph(in this case only y - residuals)
-ax[1].errorbar(log_freq[log_freq > limit], residual_log_TS,yerr=TS_log_residual_err, fmt='o', label=r'TF residual',ms=2,color='black', lw = 1.5, zorder = 1)
+ax[1].errorbar(log_freq[log_freq > limit], residual_log_TS,yerr=TS_log_residual_err, fmt='o', label=r'Amp residual',ms=2,color='black', lw = 1.5, zorder = 1)
 ax[1].errorbar(log_freq[log_freq < limit2], residual_A1,yerr=A1_residual_err, fmt='o', label=r'TF residual',ms=2,color='black', lw = 1.5, zorder = 1)
 ax[1].plot(log_freq_fit[log_freq_fit > limit-0.2]+0.1, np.full(len(log_freq_fit[log_freq_fit > limit-0.2]), weighted_mean_log_TS_residual), linestyle='--', color='red', zorder = 0)
 ax[1].plot(log_freq_fit[log_freq_fit < limit2+0.2]-0.1, np.full(len(log_freq_fit[log_freq_fit < limit2+0.2]), weighted_mean_A1_residual), linestyle='--', color='darkorange', zorder = 0)
@@ -547,28 +563,33 @@ ax[1].plot(log_freq_fit[log_freq_fit < limit2+0.2]-0.1, np.full(len(log_freq_fit
 # Plotting some text
 ax[1].text(0.6, 1.2, r'$\mu_{{\,\text{{residual}}}}$ = {e:.1f} $\pm$ {f:.1f}'.format(e=weighted_mean_log_TS_residual, f = weighted_mean_log_TS_residual_std), size=12)
 ax[0].text(-0.35, -8, r'$q$ = {e:.1f} $\pm$ {f:.1f}'.format(e=A1q, f = eA1q), size=12)
-ax[0].text(-0.35, -12, r'$r_{{\, q \, / \, 0}}$ = {e:.1f}'.format(e=r_A1), size=12)
+ax[0].text(-0.35, -11, r'$r_{{\, q \, / \, 0}}$ = {e:.1f}'.format(e=r_A1), size=12)
 
 # setting limit for y axis and the axis labels
-ax[0].set_ylabel(r'$log|A|\, (dB)$', size = 15)
+ax[0].set_ylabel(r'$log|A|\, [\, dB \, ]$', size = 15)
 ax[1].set_ylabel(r'$log|A|_{\,\text{Residuals}}$', size = 15)
-ax[1].set_xlabel(r'$log\,f$ [$log(KHz)$]', size = 13)
-ax[0].set_xlabel(r'$log\,f$ [$log(KHz)$]', size = 13)
+ax[1].set_xlabel(r'$log\,f$', size = 13)
+ax[0].set_xlabel(r'$log\,f$', size = 13)
 
 # Plotting the legend
-ax[0].legend(loc='best', fontsize = 13)
+ax[0].legend(loc='best', fontsize = 13, ncol = 2)
 
 # Dynamic text position for f_TS and f_phase
 y_min, y_max = ax[0].get_ylim() 
-text_y1 = y_max - 0.10* (y_max - y_min)  # vetical position under 10% 
-text_y2 = y_max - 0.16* (y_max - y_min)  # vertical position under 16%
-text_y3 = y_max - 0.22* (y_max - y_min)  # vertical position under 22%
+text_y1 = y_max - 0.60* (y_max - y_min)  # vetical position under 10% 
+text_y2 = y_max - 0.68* (y_max - y_min)  # vertical position under 16%
+text_y3 = y_max - 0.76* (y_max - y_min)  # vertical position under 22%
+text_y4 = y_max - 0.84* (y_max - y_min)  # vertical position under 28%
+
 
 # Plotting some text
-ax[0].text(1.1, text_y1, r'$f_{{Bode1}}$ = {fts:.1f} $\pm$ {efts:.1f} $KHz$'.format(fts=f_log_TS_bode1, efts=ef_log_TS_bode1),size=13)  
-ax[0].text(1.1, text_y2, r'$f_{{Bode2}}$ = {fph:.1f} $\pm$ {efph:.1f} $KHz$'.format(fph=f_log_TS_bode2, efph=ef_log_TS_bode2),size=13) 
-ax[0].text(1.1, text_y3, r'$f_{{Bode3}}$ = {fph:.1f} $\pm$ {efph:.1f} $KHz$'.format(fph=f_log_TS_bode3, efph=ef_log_TS_bode3),size=13) 
+ax[0].text(-0.35, text_y1, r'$f_{{Bode1}}$ = {fts:.1f} $\pm$ {efts:.1f} $KHz$'.format(fts=f_log_TS_bode1, efts=ef_log_TS_bode1),size=13)  
+ax[0].text(-0.35, text_y2, r'$f_{{Bode2}}$ = {fph:.1f} $\pm$ {efph:.1f} $KHz$'.format(fph=f_log_TS_bode2, efph=ef_log_TS_bode2),size=13) 
+ax[0].text(-0.35, text_y3, r'$f_{{Bode3}}$ = {fph:.1f} $\pm$ {efph:.1f} $KHz$'.format(fph=f_log_TS_bode3, efph=ef_log_TS_bode3),size=13) 
+ax[0].text(-0.35, text_y4,  r'$\chi^2_{{\text{{Amp}}}} \, / \, DOF$ = {fph:.1f} / {efph:.0f}'.format(fph=chi2_log_TS, efph=df), size=13) 
 
+ax[0].text(1.9, -18,  r'm = {fph:.1f} $\pm$ {efph:.1f}'.format(fph=m_log_TS, efph=em_log_TS), size=12) 
+ax[0].text(1.9, -21, r'$r_{{\, m \, / \, 20}}$ = {e:.1f}'.format(e=compatibility(m_log_TS, -20, em_log_TS, 0)), size=12)
 #fig.tight_layout()
 #plt.show()
 
@@ -622,6 +643,8 @@ df = N - 2
 # calculate the residuals error by quadratic sum using the variance theorem
 TS_meno2_residual_err = TSmeno2err
 
+# Computing chi square
+chi2_meno2 = np.sum((residual_meno2_notall[freq2 < limit4]/TS_meno2_residual_err[freq2 < limit4])**2)
 
 # Computing the weighted mean of the residuals
 weighted_mean_meno2_residual = np.average(residual_meno2_notall, weights=1/TS_meno2_residual_err**2)
@@ -641,12 +664,12 @@ y_fit_down = fitf(freq2_fit, m_meno2_notall + em_meno2_notall, q_meno2_notall+eq
 fig, ax = plt.subplots(2, 1, figsize=(6.5, 6.5), sharex=True, constrained_layout=True, height_ratios=[2, 0.7])
 
 # defining points and fit function 
-ax[0].errorbar(freq2,TSmeno2,xerr=0, yerr = TSmeno2err, fmt='o', label=r'TF Data',ms=2,color='black', zorder = 2, lw =1.5)
-ax[0].plot(freq2_fit[freq2_fit < limit3], fitf(freq2_fit[freq2_fit < limit3], *popt_meno2_notall), label=r'Linear fit $f \, < \, f_{TF}$', linestyle='--', color='blue', lw = 1, zorder = 1)
+ax[0].errorbar(freq2,TSmeno2,xerr=0, yerr = TSmeno2err, fmt='o', label=r'Amp Data',ms=2,color='black', zorder = 2, lw =1.5)
+ax[0].plot(freq2_fit[freq2_fit < limit3], fitf(freq2_fit[freq2_fit < limit3], *popt_meno2_notall), label=r'Linear fit $f \, < \, f_{Amp}$', linestyle='--', color='blue', lw = 1, zorder = 1)
 ax[0].fill_between(freq2_fit, y_fit_down, y_fit_upper, color='skyblue', alpha=0.4, label = r'$\pm \, 1\sigma$ deviation', zorder = 0)
 
 # plotting the residual graph(in this case only y - residuals)
-ax[1].errorbar(freq2, residual_meno2_notall,yerr=TS_meno2_residual_err, fmt='o', label=r'TF residual',ms=2,color='black', lw = 1.5, zorder = 1)
+ax[1].errorbar(freq2, residual_meno2_notall,yerr=TS_meno2_residual_err, fmt='o', label=r'Amp residual',ms=2,color='black', lw = 1.5, zorder = 1)
 ax[1].plot(freq2_fit, np.full(len(freq2_fit), weighted_mean_meno2_residual), linestyle='--', color='blue', zorder = 0)
 
 # Plotting some text
@@ -662,9 +685,10 @@ ax[0].set_xlabel(r'$f^2$ [$KHz^2$]', size = 13)
 ax[0].legend(loc='best', fontsize = 13)
 
 # Plotting some text
-ax[0].text(1.1, 1700, r'$f_{{TF}}$ = {fts:.2f} $\pm$ {efts:.2f} $KHz$'.format(fts=f_meno2_notall, efts=f_meno2_notall_err),size=13)  
-ax[0].text(1.1, 1000, r'$q$ = {fph:.2f} $\pm$ {efph:.2f} $KHz$'.format(fph=q_meno2_notall, efph=eq_meno2_notall),size=13) 
-ax[0].text(1.1, 600, r'$r_{{\text{{q / 1}}}}$ = {fph:.1f}'.format(fph=r_meno2_notall),size=13) 
+ax[0].text(1.1, 1700, r'$f_{{Amp}}$ = {fts:.2f} $\pm$ {efts:.2f} $KHz$'.format(fts=f_meno2_notall, efts=f_meno2_notall_err),size=13)  
+ax[0].text(1.1, 500, r'$q$ = {fph:.2f} $\pm$ {efph:.2f} $KHz$'.format(fph=q_meno2_notall, efph=eq_meno2_notall),size=13) 
+ax[0].text(1.1, 250, r'$r_{{\text{{q / 1}}}}$ = {fph:.1f}'.format(fph=r_meno2_notall),size=13) 
+ax[0].text(1.1, 900,  r'$\chi^2\, / \, DOF$ = {fph:.1f} / {efph:.0f}'.format(fph=chi2_meno2, efph=df), size=13) 
 
 # setting log scale
 ax[0].set_xscale('log')
@@ -721,6 +745,9 @@ df = N - 2
 # calculate the residuals error by quadratic sum using the variance theorem
 phase_lin_residual_err = phase_lin_err
 
+# Computing chi square
+chi2_phase_lin = np.sum((residual_phase_lin_notall[freq < limit4]/phase_lin_residual_err[freq < limit4])**2)
+
 # Computing the weighted mean of the residuals
 weighted_mean_phase_lin_residual = np.average(residual_phase_lin_notall, weights=1/phase_lin_residual_err**2)
 weighted_mean_phase_lin_residual_std = np.sqrt(1 / np.sum(1/phase_lin_residual_err**2))
@@ -764,6 +791,7 @@ ax[0].legend(loc='best', fontsize = 13)
 ax[0].text(1.1, 20, r'$f_{{TF}}$ = {fts:.3f} $\pm$ {efts:.3f} $KHz$'.format(fts=f_phase_lin_notall, efts=f_phase_lin_notall_err),size=13)  
 #ax[0].text(1.1, 30, r'$q$ = {fph:.2f} $\pm$ {efph:.2f} $KHz$'.format(fph=q_phase_lin_notall, efph=eq_phase_lin_notall),size=13) 
 #ax[0].text(1.1, 18, r'$r_{{\text{{q\, / \, 1}}}}$ = {fph:.1f}'.format(fph=r_phase_lin_notall),size=13) 
+ax[0].text(1.1, 12,  r'$\chi^2 \, / \, DOF$ = {fph:.1f} / {efph:.0f}'.format(fph=chi2_phase_lin, efph=df), size=13) 
 
 # setting log scale
 ax[0].set_xscale('log')
