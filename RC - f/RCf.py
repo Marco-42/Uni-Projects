@@ -451,7 +451,7 @@ text_y4 = y_max - 0.55* (y_max - y_min)  # vertical position under 91%
 
 # Plotting some text
 ax[0].text(23, text_y1, r'$f_{{Amp}}$ = {fts:.2f} $\pm$ {efts:.2f} $KHz$'.format(fts=a_TS, efts=ea_TS),size=13)  
-ax[0].text(23, text_y2, r'$f_{{phase}}$ = {fph:.2f} $\pm$ {efph:.3f} $KHz$'.format(fph=a_phase, efph=ea_phase),size=13) 
+ax[0].text(23, text_y2, r'$f_{{phase}}$ = {fph:.3f} $\pm$ {efph:.3f} $KHz$'.format(fph=a_phase, efph=ea_phase),size=13) 
 ax[0].text(23, text_y3,  # Orizontal position 88% 
            r'$\chi^2_{{\text{{Amp}}}} \, / \, DOF$ = {fph:.1f} / {efph:.0f}'.format(fph=chi2_TS_nolin, efph=df),
            size=13) 
