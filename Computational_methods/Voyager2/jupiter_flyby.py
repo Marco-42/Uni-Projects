@@ -80,9 +80,6 @@ def func(y, x, planet):
     f[:3] = planet[3:]
     # f[3:] = -mass[1]*G*r/((np.linalg.norm(r))**3) # Gravitational force only by the sun
 
-    # Compute planets acceleration
-    acceleration = np.zeros(3, dtype=np.float64)
-
     # boolean vector True if idx[k] != x
     idx = np.arange(y.shape[0]) != x
 
@@ -102,8 +99,10 @@ def func(y, x, planet):
     for j in range(n):
         if dist[j] > 0:
             all_accelerations[j] = (m2[j] * diff[j]) / (dist[j]**3)
+    
     # Get the resulting acceleration
     acceleration = np.zeros(3, dtype=np.float64)
+    
     for j in range(n):
         acceleration += all_accelerations[j]
     f[3:] = G * acceleration
@@ -139,8 +138,10 @@ def func_spacecraft(y, spacecraft):
     for j in range(n):
         if dist[j] > 0:
             all_accelerations[j] = (m2[j] * diff[j]) / (dist[j]**3)
+    
     # Get the resulting acceleration
     acceleration = np.zeros(3, dtype=np.float64)
+    
     for j in range(n):
         acceleration += all_accelerations[j]
     f[3:] += G * acceleration
@@ -431,6 +432,7 @@ def main():
         distance_giove = np.linalg.norm(planets[0, :, :3] - voy[:, :3], axis=1)
         min_dist = np.min(distance_giove)
         min_index = np.argmin(distance_giove)
+        print(" ")
         print(f"Minimum distance from jupiter: {min_dist:.2e} m at step {min_index}")
 
         # Plotting voyager 2 velocities in function of time

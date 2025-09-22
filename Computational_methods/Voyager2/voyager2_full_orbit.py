@@ -85,9 +85,6 @@ def func(y, x, planet):
     f[:3] = planet[3:]
     # f[3:] = -mass[1]*G*r/((np.linalg.norm(r))**3) # Gravitational force only by the sun
 
-    # Compute planets acceleration
-    acceleration = np.zeros(3, dtype=np.float64)
-
     # boolean vector True if idx[k] != x
     idx = np.arange(y.shape[0]) != x
 
@@ -107,8 +104,10 @@ def func(y, x, planet):
     for j in range(n):
         if dist[j] > 0:
             all_accelerations[j] = (m2[j] * diff[j]) / (dist[j]**3)
+    
     # Get the resulting acceleration
     acceleration = np.zeros(3, dtype=np.float64)
+    
     for j in range(n):
         acceleration += all_accelerations[j]
     f[3:] = G * acceleration
@@ -144,8 +143,10 @@ def func_spacecraft(y, spacecraft):
     for j in range(n):
         if dist[j] > 0:
             all_accelerations[j] = (m2[j] * diff[j]) / (dist[j]**3)
+    
     # Get the resulting acceleration
     acceleration = np.zeros(3, dtype=np.float64)
+    
     for j in range(n):
         acceleration += all_accelerations[j]
     f[3:] += G * acceleration
@@ -356,7 +357,7 @@ def plot_trajectory(planets, voy, tstep):
         voyager2dot.set_3d_properties([voy[i, 2]])
         return earth, jupiter, saturn, uranus, neptune, earthdot, jupiterdot, saturndot, uranusdot, neptunedot, sun, voyager2, mars, marsdot, venus, venusdot, mercury, mercurydot
         
-    anim = animation.FuncAnimation(fig, animate, repeat=True, frames=tstep-2, interval=1, blit=False)
+    anim = animation.FuncAnimation(fig, animate, repeat=True, frames=tstep-2, interval=60, blit=False)
     disconnect_zoom = zoom_factory(ax)
     pan_handler = panhandler(fig)
 
