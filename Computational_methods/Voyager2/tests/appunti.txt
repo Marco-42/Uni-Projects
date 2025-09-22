@@ -1,0 +1,16 @@
+VOYAGER 2
+No barycenter, no mass correction, no earth - moon barycenter
+TCM 1 0.004250212609335592
+TCM 2 0.09091865016203844
+TCM 3 0.02504911975383668
+TCM 4 0.000612241064321886
+Distanza minima da Giove: 7.44e+08 m al passo 167586
+Distanza minima da Saturno: 3.02e+10 m al passo 353221
+
+Barycenter, mass correction, earth - moon barycenter
+0.0039002123978087153
+0.09509946593935394
+0.02682092271753642
+0.0005843902829300102
+Distanza minima da Giove: 7.49e+08 m al passo 167630
+Distanza minima da Saturno: 3.33e+10 m al passo 353124

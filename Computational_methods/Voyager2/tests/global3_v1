@@ -1,0 +1,472 @@
+import numpy as np
+import scipy as sp
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation 
+from mpl_toolkits.mplot3d import Axes3D
+from scipy import constants
+from mpl_interactions import ioff, panhandler, zoom_factory
+from numba import njit
+from datetime import datetime, timedelta
+
+# ============== GENERAL VARIABLES DEFINITION ==============
+
+# Mass array considering the mass of the single planet system
+#voyager2 - sun - mercury - venus - earth - mars - jupiter - saturn - uranus - neptune
+mass = np.array([721.9, 1.98841e+30, 3.301e+23, 4.8673e+24, 6.04568e+24, 6.4169e+23, 1.89858e+27, 5.6847e+26, 8.6811e+25, 1.02409e+26], dtype=np.float64)
+
+ua = 1.496e+11 # Astronomical unit (non più usata per conversione)
+tstep = 300000 # Total time steps to compute
+G = constants.G 
+count = 0
+idx_found = np.array(4, dtype=np.float64)
+idx_found_flag = False
+
+# ============== USEFULL FUNCTIONS ==============
+
+
+
+
+
+# Funzione per convertire velocità VRN (Radiale, Trasversale, Normale) in xyz
+def vrn_to_xyz(V, R, N, r_ob, r_reference, vel_orbitale=None):
+    """
+    Converte le componenti di velocità VRN (Trasversale, Radiale, Normale)
+    in coordinate cartesiane xyz.
+    - V: componente trasversale (nel piano orbitale, direzione del moto)
+    - R: componente radiale (dal corpo centrale verso la sonda)
+    - N: componente normale (perpendicolare al piano orbitale, regola mano destra)
+    - pos_centro: np.array([x, y, z]) del corpo centrale
+    - pos_sonda: np.array([x, y, z]) della sonda
+    - vel_orbitale: np.array([vx, vy, vz]) della sonda (opzionale, solo per determinare la direzione V)
+    """
+    r_vec = r_ob - r_reference
+    vers_r = r_vec / np.linalg.norm(r_vec)
+    if vel_orbitale is not None:
+        # Proietta la velocità sul piano ortogonale a r_vec per ottenere la direzione trasversale
+        v_proj = vel_orbitale - np.dot(vel_orbitale, vers_r) * vers_r
+        vers_v = v_proj / np.linalg.norm(v_proj)
+    else:
+        raise ValueError("Serve il vettore velocità orbitale per determinare la direzione trasversale.")
+    vers_n = np.cross(vers_r, vers_v)
+    vers_n = vers_n / np.linalg.norm(vers_n)
+    # Ricostruisci il vettore velocità xyz
+    v_xyz = V * vers_v + R * vers_r + N * vers_n
+    return v_xyz
+
+
+
+
+
+
+
+# Function to compute the orbital velocity
+def vel_orb(dist):
+    """Get the tangential velocity of a planet in orbit around the sun - Parameter: distance"""
+    return  np.sqrt(mass[1]*G/dist)
+
+# Function to compute the orbital period
+def temp_orb(dist):
+    """Get the orbital period of a circular orbit around the sun - Parameter: distance"""
+    return 2*np.pi*np.sqrt(dist**3/(mass[1]*G))
+
+# Function to visualize the computation time progressive
+def time_progressive():
+    global count
+    for i in range(count):
+        print("█", end="", flush=True)
+    count += 1
+
+
+
+# ============== INITIAL PARAMETERS SETTING ==============
+
+# Function to set the initial parameters(positions and velocities) for the simulation
+def set_initial_par():
+    """Return planets_vector - spacecraft_vector - Initial_simulation_time(datetime)"""
+
+    # Defining a vector for each planet to simulate[ 8 objects - tstep point to simulate - 6 parameters]
+    y = np.zeros((8, tstep,6), dtype = np.float64)
+
+    # Defining a vector for the Voyager 2 spacecraft
+    spacecraft = np.zeros((tstep, 6), dtype = np.float64)
+
+    # DATA ORIGIN: 1977-Sep-06 00:00:00 - https://ssd.jpl.nasa.gov/horizons/
+    # Setting the initial positions and velocities(3D) for the planets
+    y[0, 0] = [5.381278717288588E+10, -1.326375498759620E+10, -6.025420471553947E+09, 2.211304257316617E+03, 4.949375822045782E+04, 3.838547604755085E+03] # Mercury
+    y[1, 0] = [1.871742442986523E+10, 1.061076337177261E+11, 3.629650435402021E+08, -3.460849636586416E+04, 5.908239498681193E+03, 2.078675030103584E+03] # Venus
+    y[2, 0] = [1.446572591450086E+11, -4.255261636103799E+10, -1.382388858711347E+06, 7.922148062611560E+03, 2.846719758978720E+04, 1.437543299992683E+00] # Earth-Moon system
+    y[3, 0] = [1.316405010871219E+11, 1.781618168393884E+11, 4.885386150275022E+08, -1.856098751565017E+04, 1.645728751502626E+04, 8.017415668473760E+02] # Mars
+    y[4, 0] = [1.047084919673684E+11, 7.553619249615835E+11, -5.451908718812883E+09, -1.310835896546527E+04, 2.405180590102762E+03, 2.837597739997105E+02] # Jupiter system
+    y[5, 0] = [-1.076157720566276E+12, 8.538242889765644E+11, 2.783778641868454E+10, -6.537077679780429E+03, -7.593229271933772E+03, 3.924347656014922E+02] # Saturn system
+    y[6, 0] = [-2.076851275077318E+12, -1.849434806120388E+12, 2.008257733897555E+10, 4.465583016162551E+03, -5.402946697229778E+03, -7.784091026342366E-02] # Uranus
+    y[7, 0] = [-1.124509116168402E+12, -4.387781094344799E+12, 1.162706765722020E+11, 5.216626633049927E+03, -1.318499174945794E+03, -9.297396073006603E-02] # Neptune
+
+    # Setting the initial position and velocity for the Voyager 2 spacecraft
+    # Valori forniti in km e km/s, convertiti in m e m/s
+    spacecraft[0] = [
+        1.448005439108036E+11,   # X [m]
+        -4.220149282221936E+10,  # Y [m]
+        2.559845101304352E+07,   # Z [m]
+        1.157190972543096E+04,   # VX [m/s]
+        3.813748393606272E+04,   # VY [m/s]
+        7.305166962567302E+02    # VZ [m/s]
+    ]
+    
+    # Initial simulation date
+    start_date = datetime(1977, 9, 6, 0, 0, 0)
+
+    # Return the two vectors 
+    return y, spacecraft, start_date
+
+# ============== SIMULATION HELP FUNCTIONS ==============
+
+# Function to compute planet's velocity and acceleration
+@njit # To increase performance
+def func(y, x, planet):
+    """All planets vector - Planet index - Single planet vector"""
+
+    f = np.zeros(6, dtype=np.float64)
+    r = planet[:3] # Single planet position
+    f[:3] = planet[3:]
+    f[3:] = -mass[1]*G*r/((np.linalg.norm(r))**3) # Gravitational force only by the sun
+
+    # Compute planets acceleration
+    acceleration = np.zeros(3, dtype=np.float64)
+
+    # boolean vector True if idx[k] != x
+    idx = np.arange(y.shape[0]) != x
+
+    # Getting planets positions and masses by boolean indexing
+    r2 = y[np.arange(y.shape[0])[idx], :3]
+    m2 = mass[np.arange(y.shape[0])[idx] + 2]
+
+    # Computing the distance between the studied planet and others
+    diff = r2 - r # Vectorial variable(each row identify a single planet)
+    n = diff.shape[0]
+    dist = np.empty(n, dtype=np.float64)
+    for j in range(n):
+        dist[j] = np.sqrt(diff[j,0]**2 + diff[j,1]**2 + diff[j,2]**2)
+
+    # Computing the acceleration components for each planet 
+    all_accelerations = np.zeros_like(diff)
+    for j in range(n):
+        if dist[j] > 0:
+            all_accelerations[j] = (m2[j] * diff[j]) / (dist[j]**3)
+    # Get the resulting acceleration
+    acceleration = np.zeros(3, dtype=np.float64)
+    for j in range(n):
+        acceleration += all_accelerations[j]
+    f[3:] += G * acceleration
+
+    return f
+
+# Function to compute spacecraft velocity and acceleration
+@njit # To increase performance
+def func_spacecraft(y, spacecraft):
+    "All planets vector - Spacecraft vector"
+
+    f = np.zeros(6, dtype=np.float64)
+    r = spacecraft[:3] # Spacecraft position
+    f[:3] = spacecraft[3:]
+
+    # Compute the spacecraft's acceleration only by the sun
+    f[3:] = -mass[1]*G*r/((np.linalg.norm(r))**3)
+
+    # Including the gravitational interaction from other planets
+    # Getting planets positions and masses
+    r2 = y[:, :3]
+    m2 = mass[2:]
+
+    # Computing the distance between the spacecraft and the planets
+    diff = r2 - r # Vectorial variable(each row identify a single planet)
+    n = diff.shape[0]
+    dist = np.empty(n, dtype=np.float64)
+    for j in range(n):
+        dist[j] = np.sqrt(diff[j,0]**2 + diff[j,1]**2 + diff[j,2]**2)
+
+    # Computing the acceleration components for each planet 
+    all_accelerations = np.zeros_like(diff)
+    for j in range(n):
+        if dist[j] > 0:
+            all_accelerations[j] = (m2[j] * diff[j]) / (dist[j]**3)
+    # Get the resulting acceleration
+    acceleration = np.zeros(3, dtype=np.float64)
+    for j in range(n):
+        acceleration += all_accelerations[j]
+    f[3:] += G * acceleration
+
+    return f
+
+# Function to compute the delta_time between each time step
+def get_delta_time(y, spacecraft, reference, i):
+    """Planets vector - Spacecraft vector - Reference time - increment number"""
+    global idx_found
+    global idx_found_flag
+
+    # Computing distances between selected planets and the spacecraft
+    dist_jupiter = np.linalg.norm(y[4, i, :3] - spacecraft[i, :3])
+    dist_saturn = np.linalg.norm(y[5, i, :3] - spacecraft[i, :3])
+    dist_earth = np.linalg.norm(y[2, i, :3] - spacecraft[i, :3])
+
+    # Founding the minimum distance 
+    min_dist = min(dist_jupiter, dist_saturn, dist_earth)
+
+    # Changing delta time if the distance is less than ua/5
+    if min_dist < ua:
+        if idx_found_flag == False:
+            idx_found = np.append(idx_found, i)
+            idx_found_flag = True
+        return reference / (200000 * 20)
+    else:
+        if idx_found_flag == True:
+            idx_found = np.append(idx_found, i)
+            idx_found_flag = False
+        return reference / (200000 * 5)
+
+# ============== RUNGE KUTTA ==============
+
+# Function to execute the Runge - Kutta method to solve the differential equations
+@njit # To increase performance
+def runge_kutta(y, spacecraft, dt, i):
+    """Runge-Kutta method: planets vector - spacecraft vector - delta_time - for index"""
+
+    y_return = np.zeros((8, 6), dtype = np.float64)
+
+    # Applying Runge - Kutta method to solve the planet's differential equation(for each planet)
+    for k in range(8):
+        Y1 = y[k, i,:]
+        Y2 = Y1 + func(y[:, i, :], k, Y1)*dt/2
+        Y3 = Y1 + func(y[:, i, :], k, Y2)*dt/2
+        Y4 = Y1 + func(y[:, i, :], k, Y3)*dt
+        y_return[k] = Y1+(func(y[:, i, :], k, Y1) + 2*func(y[:, i, :], k, Y2) + 2*func(y[:, i, :], k, Y3)+func(y[:, i, :], k, Y4))*dt/6
+
+    # Applying Runge - Kutta method to solve the spacecraft's differential equation
+    Y1 = spacecraft[i]
+    Y2 = Y1 + func_spacecraft(y[:, i, :], Y1)*dt/2
+    Y3 = Y1 + func_spacecraft(y[:, i, :], Y2)*dt/2
+    Y4 = Y1 + func_spacecraft(y[:, i, :], Y3)*dt
+    spacecraft_return = Y1+(func_spacecraft(y[:, i, :], Y1) + 2*func_spacecraft(y[:, i, :], Y2) + 2*func_spacecraft(y[:, i, :], Y3)+func_spacecraft(y[:, i, :], Y4))*dt/6
+
+    # Return planets and spacecraft positions
+    return y_return, spacecraft_return
+
+# ============== MAIN ==============
+def main():
+
+    # Get the initial parameters
+    planets, voy, TIME = set_initial_par()
+    
+    # Getting the reference time for delta time (in metri)
+    reference_time = temp_orb(np.linalg.norm(planets[5, 0, :3]))
+    print("0 %                                                                           100 %")
+    # Flag per eseguire l'if solo una volta
+    time_check_done = np.array([False, False, False, False, False, False, False], dtype=bool)
+    
+    for i in range(tstep - 1):
+
+        # if(i%20000 == 0):
+        #     time_progressive()
+        if i == 131851:
+            print(TIME)
+
+        if TIME >= datetime(1979, 3, 16, 23) and TIME <= datetime(1979, 3, 17):
+            print(TIME)
+            print(voy[i, 3:])
+    
+        # TCM maneuver during earth - jupitar navigation
+        if not time_check_done[0] and TIME > datetime(1977, 9, 11): # TCM 1
+            time_check_done[0] = True
+            #voy[i+1, 3:] += 0.85*voy[i+1, 3:]/10000 # 0.0085 % of velocity
+            voy[i, 3:] += (-5.163919921207238, -1.499236516615099, -3.567937635309937)
+            print(np.linalg.norm((-5.163919921207238, -1.499236516615099, -3.567937635309937))*100/np.linalg.norm(voy[i, 3:]))
+        if not time_check_done[1] and TIME > datetime(1977, 10, 29): # TCM 2
+            time_check_done[1] = True
+            #voy[i+1, 3:] += 0.85*voy[i+1, 3:]/10000 # 0.0085 % of velocity
+            voy[i, 3:] += (17.328991210124656, 9.03631952913031, -0.38309808687864155)
+            print(np.linalg.norm((17.328991210124656, 9.03631952913031, -0.38309808687864155))*100/np.linalg.norm(voy[i, 3:]))
+        if not time_check_done[2] and TIME > datetime(1979, 1, 29): # TCM 2
+            time_check_done[2] = True
+            #voy[i+1, 3:] += 0.85*voy[i+1, 3:]/10000 # 0.0085 % of velocity
+            voy[i, 3:] += (-2.2007140697315464, 9.560460432054718, 0.2728975363605656)
+            print(np.linalg.norm((-2.2007140697315464, 9.560460432054718, 0.2728975363605656))*100/np.linalg.norm(voy[i, 3:]))
+        if not time_check_done[3] and TIME > datetime(1979, 2, 20): # TCM 2
+            time_check_done[3] = True
+            #voy[i+1, 3:] += 0.85*voy[i+1, 3:]/10000 # 0.0085 % of velocity
+            voy[i, 3:] += (-7.502230584201186, 23.641507819515795, -1.142365247092679)
+            print(np.linalg.norm((-7.502230584201186, 23.641507819515795, -1.142365247092679))*100/np.linalg.norm(voy[i, 3:]))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        # Compute the delta time for the current time step
+        #édt = get_delta_time(planets, voy, reference_time, i)
+        dt = 300
+
+        planets[:, i+1], voy[i+1] = runge_kutta(planets, voy, dt, i)
+
+        # Local update of time variable
+        TIME = TIME + timedelta(seconds=dt)
+
+        # if(np.linalg.norm(planets[4, i+1, :3] - voy[i+1, :3]) > np.linalg.norm(planets[4, i, :3] - voy[i, :3])):
+        #    print(TIME)
+        #    break 
+
+        # if not time_check_done[2] and TIME > datetime(1979, 6, 27, 23, 0, 0): # TCM 4
+        #     time_check_done[2] = True
+        #     #print(np.linalg.norm(voy[i+1, 3:])/100)
+        #     # voy[i+1, 3:] += -np.linalg.norm(voy[i+1, 3:])*np.cross(voy[i+1, :3]/np.linalg.norm(voy[i+1, :3]), voy[i+1, 3:]/np.linalg.norm(voy[i+1, 3:]))/10000
+        #     voy[i+1, 3:] += (0, 0, -2*np.linalg.norm(voy[i+1, 3:])/10000)
+
+        # # TCM maneuver during jupiter post-approach(pre-approach TCM 3 and TCM 4 was only inclination corrections)
+        # if not time_check_done[3] and TIME > datetime(1979, 7, 9, 23, 0, 0): # TCM 5
+        #     time_check_done[3] = True
+        #     #print(np.linalg.norm(voy[i+1, 3:])/100)
+        #     # voy[i+1, 3:] += -np.linalg.norm(voy[i+1, 3:])*np.cross(voy[i+1, :3]/np.linalg.norm(voy[i+1, :3]), voy[i+1, 3:]/np.linalg.norm(voy[i+1, 3:]))/10000
+        #     voy[i+1, 3:] += (0, 0, -2*np.linalg.norm(voy[i+1, 3:])/10000)
+
+            
+        # # TCM maneuver during jupiter - saturn navigation
+        # if not time_check_done[4] and TIME > datetime(1981, 2, 26): # TCM 7
+        #     time_check_done[4] = True
+        #     #voy[i+1, 3:] += (0, 0, -0.574)
+        #     voy[i+1, 3:] += -0.574*np.cross(voy[i+1, :3]/np.linalg.norm(voy[i+1, :3]), voy[i+1, 3:]/np.linalg.norm(voy[i+1, 3:]))  # Correzione normale
+        #     #voy[i+1, 3:] += -0.574*voy[i+1, 3:]/np.linalg.norm(voy[i+1, 3:])
+        # if not time_check_done[5] and TIME > datetime(1981, 7, 19): # TCM 7
+        #     time_check_done[5] = True
+        #     voy[i+1, 3:] += (0, 0, -2.352)
+        #     voy[i+1, 3:] += -2.2352*np.cross(voy[i+1, :3]/np.linalg.norm(voy[i+1, :3]), voy[i+1, 3:]/np.linalg.norm(voy[i+1, 3:]))  # Correzione normale
+        #     #voy[i+1, 3:] += -0.574*voy[i+1, 3:]/np.linalg.norm(voy[i+1, 3:])
+        # if not time_check_done[6] and TIME > datetime(1981, 8, 18): # TCM 7
+        #     time_check_done[6] = True
+        #     voy[i+1, 3:] += (0, 0, -2.2352)
+        #     voy[i+1, 3:] += -2.2352*np.cross(voy[i+1, :3]/np.linalg.norm(voy[i+1, :3]), voy[i+1, 3:]/np.linalg.norm(voy[i+1, 3:]))  # Correzione normale
+        #     #voy[i+1, 3:] += -0.574*voy[i+1, 3:]/np.linalg.norm(voy[i+1, 3:])
+
+        # if(i == 167583):
+        #     print(TIME)
+
+        # if not time_check_done[4] and TIME > datetime(1979, 7, 9):  # TCM 3-4-5
+        #     time_check_done[4] = True
+        #    # print(f"La simulazione ha superato l'11 ottobre 1979: {TIME}")
+        #     print(vrn_to_xyz(-22.77, 0.31, 0, voy[i+1, :3], planets[4, i+1, :3], vel_orbitale=voy[i+1, 3:]))
+        #     voy[i+1, 3:] += vrn_to_xyz(-22.77, 0.31, 0, voy[i+1, :3], planets[4, i+1, :3], vel_orbitale=voy[i+1, 3:])
+    
+
+
+    distance_giove = np.linalg.norm(planets[4, :, :3] - voy[:, :3], axis=1)
+    min_dist = np.min(distance_giove)
+    min_index = np.argmin(distance_giove)
+    print(f"Distanza minima da Giove: {min_dist:.2e} m al passo {min_index}")
+
+    distance_saturno = np.linalg.norm(planets[5, :, :3] - voy[:, :3], axis=1)
+    min_dist_sat = np.min(distance_saturno)
+    min_index_sat = np.argmin(distance_saturno)
+    print(f"Distanza minima da Saturno: {min_dist_sat:.2e} m al passo {min_index_sat}")
+
+    plt.style.use('dark_background')
+    fig = plt.figure(figsize=(6, 6))
+    ax = fig.add_subplot(projection='3d')
+    ax.axis('off')
+    plt.subplots_adjust(left=0, right=1, top=1, bottom=0, wspace=None, hspace=None)
+    ax.set_xlim3d([-6*ua, 6*ua])
+    ax.set_ylim3d([-6*ua, 6*ua])
+    ax.set_zlim3d([-6*ua, 6*ua])
+    
+    sun, = ax.plot([], [], [],'.', markersize=11, color = 'yellow')
+    mercury, = ax.plot([], [], [],'-', markersize=9, color = 'gray')
+    mercurydot, = ax.plot([], [], [],'.', markersize=9, color = 'gray')
+    venus, = ax.plot([], [], [],'-', markersize=9, color = 'goldenrod')
+    venusdot, = ax.plot([], [], [],'.', markersize=9, color = 'goldenrod')
+    earth, = ax.plot([], [], [],'-', markersize=9, color = 'green')
+    earthdot, = ax.plot([], [], [],'.', markersize=9, color = 'green')
+    mars, = ax.plot([], [], [],'-', markersize=9, color = 'red')
+    marsdot, = ax.plot([], [], [],'.', markersize=9, color = 'red')
+    jupiter, = ax.plot([], [], [],'-', markersize=9, color = 'brown')
+    jupiterdot, = ax.plot([], [], [],'.', markersize=9, color = 'brown')
+    saturn, = ax.plot([], [], [],'-', markersize=9, color = 'orange')
+    saturndot, = ax.plot([], [], [],'.', markersize=9, color = 'orange')
+    uranus, = ax.plot([], [], [],'-', markersize=9, color = 'lightblue')
+    uranusdot, = ax.plot([], [], [],'.', markersize=9, color = 'lightblue')
+    neptune, = ax.plot([], [], [],'-', markersize=9, color = 'blue')
+    neptunedot, = ax.plot([], [], [],'.', markersize=9, color = 'blue')
+
+    voyager2, = ax.plot([],[],[],'-', markersize=9, color = 'white')
+    voyager2dot, = ax.plot([],[],[],'.', markersize=9, color = 'white')
+    
+    def animate(frame):
+        step = 1000
+        if((frame > idx_found[0] and frame < idx_found[1]) 
+           or (frame > idx_found[2] and frame < idx_found[3])):
+            i = frame * 3000
+        else: 
+            i = frame * step
+        trail = 1000  # lunghezza della scia visibile per i pianeti
+        sun.set_data([0],[0])
+        sun.set_3d_properties([0])
+        # Mostra solo una scia breve per ogni pianeta
+        mercury.set_data(planets[0, max(0,i-trail):i, 0], planets[0, max(0,i-trail):i, 1])
+        mercury.set_3d_properties(planets[0, max(0,i-trail):i, 2])
+        mercurydot.set_data([planets[0, i, 0]], [planets[0, i, 1]])
+        mercurydot.set_3d_properties([planets[0, i, 2]])
+        venus.set_data(planets[1, max(0,i-trail):i, 0], planets[1, max(0,i-trail):i, 1])
+        venus.set_3d_properties(planets[1, max(0,i-trail):i, 2])
+        venusdot.set_data([planets[1, i, 0]], [planets[1, i, 1]])
+        venusdot.set_3d_properties([planets[1, i, 2]])
+        earth.set_data(planets[2, max(0,i-trail):i, 0], planets[2, max(0,i-trail):i, 1])
+        earth.set_3d_properties(planets[2, max(0,i-trail):i, 2])
+        earthdot.set_data([planets[2, i, 0]], [planets[2, i, 1]])
+        earthdot.set_3d_properties([planets[2, i, 2]])
+        mars.set_data(planets[3, max(0,i-trail):i, 0], planets[3, max(0,i-trail):i, 1])
+        mars.set_3d_properties(planets[3, max(0,i-trail):i, 2])
+        marsdot.set_data([planets[3, i, 0]], [planets[3, i, 1]])
+        marsdot.set_3d_properties([planets[3, i, 2]])
+        jupiter.set_data(planets[4, max(0,i-trail):i, 0], planets[4, max(0,i-trail):i, 1])
+        jupiter.set_3d_properties(planets[4, max(0,i-trail):i, 2])
+        jupiterdot.set_data([planets[4, i, 0]], [planets[4, i, 1]])
+        jupiterdot.set_3d_properties([planets[4, i, 2]])
+        saturn.set_data(planets[5, max(0,i-trail):i, 0], planets[5, max(0,i-trail):i, 1])
+        saturn.set_3d_properties(planets[5, max(0,i-trail):i, 2])
+        saturndot.set_data([planets[5, i, 0]], [planets[5, i, 1]])
+        saturndot.set_3d_properties([planets[5, i, 2]])
+        uranus.set_data(planets[6, max(0,i-trail):i, 0], planets[6, max(0,i-trail):i, 1])
+        uranus.set_3d_properties(planets[6, max(0,i-trail):i, 2])
+        uranusdot.set_data([planets[6, i, 0]], [planets[6, i, 1]])
+        uranusdot.set_3d_properties([planets[6, i, 2]])
+        neptune.set_data(planets[7, max(0,i-trail):i, 0], planets[7, max(0,i-trail):i, 1])
+        neptune.set_3d_properties(planets[7, max(0,i-trail):i, 2])
+        neptunedot.set_data([planets[7, i, 0]], [planets[7, i, 1]])
+        neptunedot.set_3d_properties([planets[7, i, 2]])
+        # La sonda mostra la traiettoria completa
+        voyager2.set_data(voy[:i, 0], voy[:i, 1])
+        voyager2.set_3d_properties(voy[:i, 2])
+        voyager2dot.set_data([voy[i, 0]], [voy[i, 1]])
+        voyager2dot.set_3d_properties([voy[i, 2]])
+        return earth, jupiter, saturn, uranus, neptune, earthdot, jupiterdot, saturndot, uranusdot, neptunedot, sun, voyager2, mars, marsdot, venus, venusdot, mercury, mercurydot
+
+    anim = animation.FuncAnimation(fig, animate, repeat=True, frames=tstep-2, interval=1)
+    # anim.save('orbita.gif', writer='Pillow', fps=30)
+
+    disconnect_zoom = zoom_factory(ax)
+    pan_handler = panhandler(fig)
+    plt.show()
+
+if __name__ == "__main__":
+    main()
