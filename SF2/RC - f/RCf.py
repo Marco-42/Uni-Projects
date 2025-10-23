@@ -924,6 +924,6 @@ plt.savefig('result_C'+'.png',
             orientation ='Portrait',
             dpi = 100)
 
-#plt.show()
+plt.show()
 
 # endregion

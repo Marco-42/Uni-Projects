@@ -1,0 +1,29 @@
+========================================
+APPUNTI LEZIONE 23-10-2025 - LTspice tutorial
+========================================
+
+Appunti rapidi:
+- Ricorda di andare a caratterizzare il singolo cavo coassiale come una resistenza con in parallelo una capacità.
+- Possiamo generare segnali di una certa forma con differenti frequenze. 
+- Per ruotare un elemento premere CTRL-R
+- I MegaHz si indicano con Meg
+- Il nostro modello di amplificatore operazione è il modello ADTL082
+
+Simulazione di circuito mediante programma LTspice 
+--> Per impostare le caratteristiche di ciascun componente basta cliccare con il tasto destro sopra al componente.
+	--> E' possibile anche creare a mano i componenti di un circuito se questi non sono presenti all'interno delle librerie
+--> Ci sono differenti modelli di SPICE: i singoli componenti non sono direttamente rappresentati all'interno del programma
+    ma sono rappresentati a partire da componenti più semplici
+    --> Ogni singolo componente può essere implementato se è disponibile online un corrispondente modello SPICE(tipicamente)
+        è fornito dai produttori del componente
+    --> Ogni modello è caratterizzato da un certo livello che ne caratterizza l'efficacia(aumenta l'accuratezza della simulazione)
+--> Modello per OPERAZIONALE:
+    --> Per le nostre simulazioni possiamo utilizzare gli amplificatori generici già disponibili su LTspice, in ogni caso possiamo
+        anche settare in maniera manuale le caratteristiche del nostro operazionale(modello: UniversalOpAmp)
+        --> UniversalOpAmp è una simulazione di livello 1
+    --> La risposta del modello può essere modificata
+    --> Il modello per l'operaziona invertente è l'OpAmp2
+
+    
+
+
