@@ -60,11 +60,14 @@ def main():
 		raise RuntimeError('No valid data read from file.')
 
 	st = t_scale * 1e-6 * 2/(5*np.sqrt(24)) # Triangular distribution applied considering max error
-	sy = np.sqrt(pow(y_scale/(10*np.sqrt(6)), 2) + pow(y*3/(np.sqrt(3)*100), 2)) # 1/10 reading error with max uniform distribution + 3% scale error with max uniform distribution
-	sy_probe = np.sqrt(pow(y_scale_probe/(10*np.sqrt(6)), 2) + pow(y_probe*3/(np.sqrt(3)*100), 2)) # 1/10 reading error with max uniform distribution + 3% scale error with max uniform distribution
+	sy = np.sqrt(pow(y_scale/(10*np.sqrt(3)), 2) + pow(y*3/(np.sqrt(3)*100), 2)) # 1/10 reading error with max uniform distribution + 3% scale error with max uniform distribution
+	sy_probe = np.sqrt(pow(y_scale_probe/(10*np.sqrt(3)), 2) + pow(y_probe*3/(np.sqrt(3)*100), 2)) # 1/10 reading error with max uniform distribution + 3% scale error with max uniform distribution
 	t = t * 1e-6 # Convert microseconds to seconds
 	t_probe = t_probe * 1e-6 # Convert microseconds to seconds
 
+	print(y, sy)
+	print("probe")
+	print(y_probe, sy_probe)
 	# Searching for initial parameters
 	# initial parameters input: A ~ (max-min), C ~ min, b ~ -1 / (range_t)
 	A0 = (np.max(y))
