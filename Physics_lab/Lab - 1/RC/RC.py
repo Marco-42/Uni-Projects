@@ -65,9 +65,9 @@ def main():
 	t = t * 1e-6 # Convert microseconds to seconds
 	t_probe = t_probe * 1e-6 # Convert microseconds to seconds
 
-	print(y, sy)
-	print("probe")
-	print(y_probe, sy_probe)
+		# EXPONENTIAL FITTING
+	print("EXPONENTIAL FITTING")
+
 	# Searching for initial parameters
 	# initial parameters input: A ~ (max-min), C ~ min, b ~ -1 / (range_t)
 	A0 = (np.max(y))
@@ -145,6 +145,93 @@ def main():
 	ax[1].set_xlabel(r'Time ($\mu$s)')
 	ax[1].set_ylabel('Residuals (V)')
 	ax[1].set_ylim(-0.08, 0.12)
+	ax[1].legend(ncol=2)
+
+	plt.tight_layout()
+	plt.savefig(outpath, dpi=150)
+	print(f'Graph saved to: {outpath}')
+	plt.show()
+
+	# LINEAR FITTING
+	print("LINEAR FITTING")
+
+	# Searching for initial parameters
+	A0 = -1/(500*1e-6)
+	b0 = np.log(np.max(y))
+	p0 = [A0, b0]
+
+	sy = sy / y
+	sy_probe = sy_probe / y_probe
+	y = np.log(y)
+	y_probe = np.log(y_probe)
+	popt, perr, x_residual, y_residual, chi2 = helper.fit_linear(t, y, x_error=st, y_error=sy, init0=p0)
+	popt_probe, perr_probe, x_residual_probe, y_residual_probe, chi2_probe = helper.fit_linear(t_probe, y_probe, x_error=st, y_error=sy_probe, init0=p0)
+
+	# Computing residuals
+	
+	# calculate the residuals error by quadratic sum using the variance theorem
+	y_residual_err = np.sqrt(pow(sy, 2) + pow(perr[0]*t, 2) + pow(popt[0]*st, 2) + pow(perr[1], 2))
+	y_residual_probe_err = np.sqrt(pow(sy_probe, 2) + pow(perr_probe[0]*t_probe, 2) + pow(popt_probe[0]*st, 2) + pow(perr_probe[1], 2))
+
+	# Computing the weighted mean of the residuals
+	weighted_mean_y_residual = np.average(y_residual, weights=1/y_residual_err**2)
+	weighted_mean_y_residual_std = np.sqrt(1 / np.sum(1/y_residual_err**2))
+	weighted_mean_y_residual_probe = np.average(y_residual_probe, weights=1/y_residual_probe_err**2)
+	weighted_mean_y_residual_std_probe = np.sqrt(1 / np.sum(1/y_residual_probe_err**2))
+
+	# computing compatibility between weighted mean of residuals and 0
+	r_residual = np.abs(weighted_mean_y_residual)/weighted_mean_y_residual_std
+	r_residual_probe = np.abs(weighted_mean_y_residual_probe)/weighted_mean_y_residual_std_probe
+
+	# Print fit results
+	print('Fit parameters (A, b) - BNC:')
+	print(f'  A = {popt[0]:.6g} ± {perr[0]:.6g}')
+	print(f'  b = {popt[1]:.6g} ± {perr[1]:.6g}')
+	print("Chi-squared:", chi2)
+
+	print('Fit parameters (A, b) - Probe:')
+	print(f'  A = {popt_probe[0]:.6g} ± {perr_probe[0]:.6g}')
+	print(f'  b = {popt_probe[1]:.6g} ± {perr_probe[1]:.6g}')
+	print("Chi-squared:", chi2_probe)
+	
+	# Computing Tau
+	tau = -1 / popt[0]
+	tau_err = perr[0] / (popt[0]**2) 
+	tau_probe = -1 / popt_probe[0]
+	tau_probe_err = perr_probe[0] / (popt_probe[0]**2)
+
+	# Print Tau results
+	print(f'Tau (BNC): {tau*1e6:.6g} ± {tau_err*1e6:.6g} µs')
+	print(f'Tau (Probe): {tau_probe*1e6:.6g} ± {tau_probe_err*1e6:.6g} µs')
+
+	# save plot in the same folder
+	outpath = os.path.join(base_dir, 'RC_lin_fit.png')
+
+	# Taking points for the fit line
+	t_fine = np.linspace(np.min(t), np.max(t), 400)
+	y_fit = helper.linear_model(t_fine, *popt)
+	t_probe_fine = np.linspace(np.min(t_probe), np.max(t_probe), 400)
+	y_fit_probe = helper.linear_model(t_probe_fine, *popt_probe)
+
+    # Plotting
+	fig, ax = plt.subplots(2, 1, figsize=(6.5,6.5),sharex=True, height_ratios=[2, 0.6])
+	ax[0].errorbar(t * 1e6, y, xerr=st*1e6, yerr=sy, fmt='o', label='Datas BNC', color='black', ms = 3, lw = 1.6)
+	ax[0].errorbar(t_probe * 1e6, y_probe, xerr=st*1e6, yerr=sy_probe, fmt='o', label='Datas Probe', color='dodgerblue', ms = 3, lw = 1.6)
+	ax[0].plot(t_fine * 1e6, y_fit, label='Linear fit BNC', color='red', lw = 1.2)
+	ax[0].plot(t_probe_fine * 1e6, y_fit_probe, label='Linear fit Probe', color='orange', lw = 1.2)
+	ax[0].set_ylabel('ln(V)')
+	ax[0].legend()
+	ax[0].set_title('Linear fit - RC data')
+	#ax[0].set_ylim(0.1, 1.6)
+	ax[0].text(0, np.log(0.30), r'$\tau_{{\,\text{{BNC}}}}$ = {e:.0f} $\pm$ {f:.0f} $\mu s$'.format(e=tau*1e6, f = tau_err*1e6), size=12)
+	ax[0].text(0, np.log(0.25), r'$\tau_{{\,\text{{Probe}}}}$ = {e:.0f} $\pm$ {f:.0f} $\mu s$'.format(e=tau_probe*1e6, f = tau_probe_err*1e6), size=12)
+
+	ax[1].errorbar(t * 1e6 - 7, y_residual, yerr=y_residual_err, fmt='o', label='Residuals BNC', color='black', ms = 3, lw = 1.6)
+	ax[1].errorbar(t_probe * 1e6 + 7, y_residual_probe, yerr=y_residual_probe_err, fmt='o', label='Residuals Probe', color='dodgerblue', ms = 3, lw = 1.6)
+	ax[1].axhline(0, color='gray', linestyle='--', lw = 1.5)
+	ax[1].set_xlabel(r'Time ($\mu$s)')
+	ax[1].set_ylabel('Residuals')
+	ax[1].set_ylim(-0.1, 0.16)
 	ax[1].legend(ncol=2)
 
 	plt.tight_layout()

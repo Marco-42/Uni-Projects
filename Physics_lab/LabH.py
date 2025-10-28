@@ -59,6 +59,51 @@ def read_data_xy_scalexy(path):
 	# Convert to numpy arrays and return
 	return np.array(x, dtype=float), np.array(y, dtype=float), np.array(x_scale, dtype=float), np.array(y_scale, dtype=float)
 
+# Data style x - y - z - z_error
+def read_data_xyz_errorz(path):
+	"""Read the file (path in input) and return four arrays: x (float), y (float), z (float), and z_error (float).
+
+	The parser ignores lines starting with '#', replaces commas with
+	decimal points, and takes the first four numeric columns found in the line.
+	"""
+
+	COLUMN = 4  # Number of columns in the data file
+
+	x = []
+	y = []
+	z = []
+	z_error = []
+
+	with open(path, 'r', encoding='utf-8') as f:
+
+		# File adapted to a common format
+		for line in f:  # Take all the different lines
+			line = line.strip()
+			if not line or line.startswith('#'):  # Ignore empty lines and comments
+				continue
+			# normalize decimal comma if present
+			line = line.replace(',', '.')
+			# split on whitespace
+			parts = line.split()
+
+			# Extracting data from adapted file
+			nums = []
+			for p in parts:
+				try:
+					nums.append(float(p))
+				except ValueError:
+					continue
+				if len(nums) >= COLUMN:
+					break
+			if len(nums) >= COLUMN:
+				x.append(nums[0])
+				y.append(nums[1])
+				z.append(nums[2])
+				z_error.append(nums[3])
+
+	# Convert to numpy arrays and return
+	return np.array(x, dtype=float), np.array(y, dtype=float), np.array(z, dtype=float), np.array(z_error, dtype=float)
+
 # ============= FUNCTIONS MODELS =============
 # Exponential model function for odr
 def odr_exp(beta, x):
