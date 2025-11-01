@@ -139,7 +139,7 @@ def main():
 	ax[0].text(0, 0.35, r'$\tau_{{\,\text{{BNC}}}}$ = {e:.0f} $\pm$ {f:.0f} $\mu s$'.format(e=tau*1e6, f = tau_err*1e6), size=12)
 	ax[0].text(0, 0.25, r'$\tau_{{\,\text{{Probe}}}}$ = {e:.0f} $\pm$ {f:.0f} $\mu s$'.format(e=tau_probe*1e6, f = tau_probe_err*1e6), size=12)
 
-	ax[1].errorbar(t * 1e6 - 7, y_residual, yerr=y_residual_err, fmt='o', label='Residuals BNC', color='black', ms = 3, lw = 1.6)
+	ax[1].errorbar(t * 1e6 - 7, y_residual, yerr=y_residual_err, fmt='o', label='Residuals', color='black', ms = 3, lw = 1.6)
 	ax[1].errorbar(t_probe * 1e6 + 7, y_residual_probe, yerr=y_residual_probe_err, fmt='o', label='Residuals Probe', color='dodgerblue', ms = 3, lw = 1.6)
 	ax[1].axhline(0, color='gray', linestyle='--', lw = 1.5)
 	ax[1].set_xlabel(r'Time ($\mu$s)')
@@ -226,7 +226,7 @@ def main():
 	ax[0].text(0, np.log(0.30), r'$\tau_{{\,\text{{BNC}}}}$ = {e:.0f} $\pm$ {f:.0f} $\mu s$'.format(e=tau*1e6, f = tau_err*1e6), size=12)
 	ax[0].text(0, np.log(0.25), r'$\tau_{{\,\text{{Probe}}}}$ = {e:.0f} $\pm$ {f:.0f} $\mu s$'.format(e=tau_probe*1e6, f = tau_probe_err*1e6), size=12)
 
-	ax[1].errorbar(t * 1e6 - 7, y_residual, yerr=y_residual_err, fmt='o', label='Residuals BNC', color='black', ms = 3, lw = 1.6)
+	ax[1].errorbar(t * 1e6 - 7, y_residual, yerr=y_residual_err, fmt='o', label='Residuals', color='black', ms = 3, lw = 1.6)
 	ax[1].errorbar(t_probe * 1e6 + 7, y_residual_probe, yerr=y_residual_probe_err, fmt='o', label='Residuals Probe', color='dodgerblue', ms = 3, lw = 1.6)
 	ax[1].axhline(0, color='gray', linestyle='--', lw = 1.5)
 	ax[1].set_xlabel(r'Time ($\mu$s)')

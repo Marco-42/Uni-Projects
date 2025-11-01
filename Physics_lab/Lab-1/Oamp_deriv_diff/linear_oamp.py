@@ -45,7 +45,7 @@ def main():
 
 	# resolve the relative path to the data file in the same folder as the script
 	base_dir = os.path.dirname(os.path.abspath(__file__))
-	data_path = os.path.join(base_dir, 'data_common.txt') # Data NO probe
+	data_path = os.path.join(base_dir, 'data_VNC.txt') # Data NO probe
 	if not os.path.exists(data_path):
 		raise FileNotFoundError(f'Data file not found: {data_path}')
 
@@ -72,6 +72,8 @@ def main():
 	# calculate the residuals error by quadratic sum using the variance theorem
 	y_residual_err = np.sqrt(pow(sy, 2) + pow(perr[0]*x, 2) + pow(popt[0]*sx, 2) + pow(perr[1], 2))
 
+	print(y_residual)
+	print(y_residual_err)
 	# Computing the weighted mean of the residuals
 	weighted_mean_y_residual = np.average(y_residual, weights=1/y_residual_err**2)
 	weighted_mean_y_residual_std = np.sqrt(1 / np.sum(1/y_residual_err**2))
@@ -90,7 +92,7 @@ def main():
 	tau_err = perr[1] / (popt[1]**2) 
 	
 	# save plot in the same folder
-	outpath = os.path.join(base_dir, 'amp_differenze.png')
+	outpath = os.path.join(base_dir, 'A1.png')
 
 	# Taking points for the fit line
 	t_fine = np.linspace(np.min(x), np.max(x), 400)
@@ -101,16 +103,16 @@ def main():
 	ax[0].errorbar(x, y, xerr=sx, yerr=sy, fmt='o', label='Datas', color='black', ms = 3, lw = 1.6)
 	ax[0].plot(t_fine, y_fit, label='Linear fit', color='red', lw = 1.2)
 	ax[0].set_ylabel(r'$V_{\text{out}} \, (V)$')
-	ax[0].legend()
-	ax[0].set_title('Linear fit - VTC')
+	ax[0].legend(loc='lower right')
+	ax[0].set_title('Linear fit - A1')
 	#ax[0].text(0, 0.35, r'$\tau_{{\,\text{{BNC}}}}$ = {e:.0f} $\pm$ {f:.0f} $\mu s$'.format(e=tau*1e6, f = tau_err*1e6), size=12)
 
-	ax[1].errorbar(x, y_residual, yerr=y_residual_err, fmt='o', label='Residuals BNC', color='black', ms = 3, lw = 1.6)
+	ax[1].errorbar(x, y_residual, yerr=y_residual_err, fmt='o', label='Residuals', color='black', ms = 3, lw = 1.6)
 	ax[1].axhline(0, color='gray', linestyle='--', lw = 1.5)
 	ax[1].set_xlabel(r'$V_{\text{in}} \, (V)$')
 	ax[1].set_ylabel('Residuals (V)')
 	ax[1].legend(ncol=2)
-
+	#ax[1].set_ylim(-0.35, 0.5)
 	plt.tight_layout()
 	plt.savefig(outpath, dpi=150)
 	print(f'Graph saved to: {outpath}')

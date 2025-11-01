@@ -105,6 +105,8 @@ def read_data_xyz_errorz(path):
 	return np.array(x, dtype=float), np.array(y, dtype=float), np.array(z, dtype=float), np.array(z_error, dtype=float)
 
 # ============= FUNCTIONS MODELS =============
+# Model functions for fitting
+
 # Exponential model function for odr
 def odr_exp(beta, x):
 	"""beta[0] * exp(beta[1] * x) + beta[2]"""
@@ -124,6 +126,8 @@ def linear_model(x, m, q):
 	return m * x + q
 
 # ============= FIT FUNCTIONS ================
+# Functions to perform fits using ODR (errors on both axes)
+
 # Exponential fit function
 def fit_exponential(x, y, x_error=None, y_error=None, init0=None):
 	"""Exponential fit using ODR (errors on both axes) -  x, y, x_error, y_error, init0.
@@ -164,8 +168,8 @@ def fit_exponential(x, y, x_error=None, y_error=None, init0=None):
 	params_err = out.sd_beta
 
 	# Get residuals (orthogonal distances returned by ODR)
-	x_residual = out.delta
-	y_residual = out.delta
+	y_residual = out.eps
+	x_residual = np.sqrt(pow(out.delta, 2) + pow(out.eps, 2))
 
 	# Return optimized parameters and their uncertainties
 	return params, params_err, x_residual, y_residual, chi2
@@ -210,8 +214,31 @@ def fit_linear(x, y, x_error=None, y_error=None, init0=None):
 	params_err = out.sd_beta
 
 	# Get residuals (orthogonal distances returned by ODR)
-	x_residual = out.delta
-	y_residual = out.delta
+	y_residual = out.eps
+	x_residual = np.sqrt(pow(out.delta, 2) + pow(out.eps, 2))
 
 	# Return optimized parameters and their uncertainties
 	return params, params_err, x_residual, y_residual, chi2
+
+# ============= ERROR FUNCTIONS ==============
+# Functions to compute errors
+
+# Voltage error function
+def voltage_error(V, V_scale):
+	"""Compute voltage error given voltage V and voltage scale V_scale."""
+	return np.sqrt(pow(V_scale/(10*np.sqrt(3)), 2) + pow(V*3/(np.sqrt(3)*100), 2)) # 1/10 reading error with max uniform distribution + 3% scale error with max uniform distribution
+
+# Time error function
+def time_error(t_scale):
+	"""Compute time error given time scale t_scale."""
+	return t_scale * 2/(5*np.sqrt(24)) # Triangular distribution applied considering max error
+
+# Resistance error function
+def resistance_error(R, R_scale):
+	"""Compute resistance error given resistance R."""
+	return R * 0.01  # 1% resistance error
+
+# Capacitance error function
+def capacitance_error(C, C_scale):
+	"""Compute capacitance error given capacitance C."""
+	return C * 0.02  # 2% capacitance error
