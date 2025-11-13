@@ -11,10 +11,13 @@ from scipy.odr import *
 from Physics_lab import LabH as helper # Importing helper functions
 
 # Variable to set
-TO_MU = 1e6  # Conversion factor to micro units
-Vin = [1.0, ...]    # Input voltage with scale (V) --> remember the sign
-Rin = [5e3, ...]  # Input resistance with scale (Ohm)
-Cf = [1e-9, ...]  # Feedback capacitance with scale (F)
+Vin = [-1.02, helper.voltage_error(1.02, 0.2)]    # Input voltage with scale (V) --> remember the sign
+Rin = [55.646e3, helper.resistance_error(55.646e3, 100e3)]  # Input resistance with scale (Ohm)
+C = [243e-12, helper.capacitance_error(243e-12, 1e-9)]  # Feedback capacitance with scale (F)
+C_back = [22e-12, helper.capacitance_error(22e-12, 1e-9)]  # Background capacitance with scale (F)
+
+# Computing Cf without background
+Cf = [C[0] - C_back[0], np.sqrt(C[1]**2 + C_back[1]**2)]
 
 # Setting plot style
 plt.style.use(hep.style.ROOT)
@@ -51,7 +54,7 @@ def main():
 
 	# resolve the relative path to the data file in the same folder as the script
 	base_dir = os.path.dirname(os.path.abspath(__file__))
-	data_path = os.path.join(base_dir, 'data_preamp.txt') # Data NO probe
+	data_path = os.path.join(base_dir, 'data_lin_total.txt') # Data NO probe
 	if not os.path.exists(data_path):
 		raise FileNotFoundError(f'Data file not found: {data_path}')
 
@@ -59,19 +62,23 @@ def main():
 	# Data style: time (t), voltage (V), time scale (t_scale), voltage scale (V_scale)
 	t, V, t_scale, V_scale = helper.read_data_xy_scalexy(data_path)
 
+	# Convert time
+	t = t/helper.TO_MU  # Convert time to seconds
+
 	# Searching for possibile reading errors
 	if t.size == 0: 
 		raise RuntimeError('No valid data read from file.')
 
 	# Computing errors
-	st = TO_MU * helper.time_error(t_scale)  # Time error
+	st = helper.time_error(t_scale)/helper.TO_MU  # Time error
 	sV = helper.voltage_error(V, V_scale)  # Voltage error
 
 	# Computing charge and its error
-	Q = Vin[0]*t / Rin[0]  # Total input charge
-	sQ = np.sqrt(pow(helper.voltage_error(Vin[0], Vin[1])*t/Rin[0], 2) + pow(st*Vin[0]/Rin[0], 2) + pow(helper.resistance_error(Rin[0], Rin[1])*Vin[0]*t/Rin[0]**2, 2))
+	Q = -Vin[0]*t / Rin[0]  # Total input charge
+	#sQ = np.sqrt(pow(Vin[1]*t/Rin[0], 2) + pow(st*Vin[0]/Rin[0], 2) + pow(Rin[1]*Vin[0]*t/Rin[0]**2, 2)) --> WITH TIME ERROR
+	sQ = np.sqrt(pow(Vin[1]*t/Rin[0], 2) + pow(Rin[1]*Vin[0]*t/Rin[0]**2, 2))  # WITHOUT TIME ERROR
 
-	# Searching for initial parameters TODO  
+	# Searching for initial parameters
 	m = -1/Cf[0]
 	q = 0
 	p0 = [m, q]
@@ -96,10 +103,16 @@ def main():
 	print(f'  q = {popt[1]:.6g} ± {perr[1]:.6g}')
 	print("Chi-squared:", chi2)
 
-	# Computing Tau
-	tau = -1 / popt[1]
-	tau_err = perr[1] / (popt[1]**2) 
-	
+	# Computing Cfit - format [value, error]
+	Cfit = [1 / popt[0], perr[0] / (popt[0]**2)]
+
+	print(f'Computed Cf from fit: {Cfit[0]*helper.TO_P:.4f} ± {Cfit[1]*helper.TO_P:.4f} pF')
+
+	# Computing compatibility between Cfit and Cf
+	r_Cf = helper.compatibility(Cfit[0], Cfit[1], Cf[0], Cf[1])
+
+	print(f'Compatibility between Cf from fit and Cf from datasheet: r = {r_Cf:.4f}')
+
 	# save plot in the same folder
 	outpath = os.path.join(base_dir, 'preamp.png')
 
@@ -109,18 +122,21 @@ def main():
 
     # Plotting
 	fig, ax = plt.subplots(2, 1, figsize=(6.5,6.5),sharex=True, height_ratios=[2, 0.6])
-	ax[0].errorbar(Q, V, xerr=sQ, yerr=sV, fmt='o', label='Datas', color='black', ms = 3, lw = 1.6)
-	ax[0].plot(Q_fine, y_fit, label='Linear fit', color='red', lw = 1.2)
+	ax[0].errorbar(Q*helper.TO_N, V, xerr=sQ*helper.TO_N, yerr=sV, fmt='o', label='Data', color='black', ms = 3, lw = 1.6)
+	ax[0].plot(Q_fine*helper.TO_N, y_fit, label='Linear fit', color='dodgerblue', lw = 1.2)
 	ax[0].set_ylabel(r'$V_{\text{out}} \, (V)$')
 	ax[0].legend(loc='lower right')
 	ax[0].set_title('Linear fit - Preamp Response')
-	#ax[0].text(0, 0.35, r'$\tau_{{\,\text{{BNC}}}}$ = {e:.0f} $\pm$ {f:.0f} $\mu s$'.format(e=tau*1e6, f = tau_err*1e6), size=12)
+	ax[0].text(0.13, 1.2, r'$m_{{\,\text{{fit}}}}$ = {e:.1f} $\pm$ {f:.1f} $pC^{{\text{{-1}}}}$'.format(e=popt[0]/helper.TO_N, f = perr[0]/helper.TO_N), size=12)
+	ax[0].text(0.13, 1, r'$q_{{\,\text{{fit}}}}$ = {e:.3f} $\pm$ {f:.3f} V'.format(e=popt[1], f = perr[1]), size=12)
+	# ax[0].text(0.13, 0.8, r'$r_{{\,\text{{Cf}}}}$ = {e:.2f}'.format(e=r_Cf), size=12)
+	ax[0].text(0.13, 0.78, r'$\chi^2 \, / \, DOF$ = {e:.1f} / {f:.0f}'.format(e=chi2, f=V_residual.size-2), size=12)
 
-	ax[1].errorbar(Q, V_residual, yerr=V_residual_err, fmt='o', label='Residuals', color='black', ms = 3, lw = 1.6)
+	ax[1].errorbar(Q*helper.TO_N, V_residual, yerr=V_residual_err, fmt='o', label='Residuals', color='black', ms = 3, lw = 1.6)
 	ax[1].axhline(0, color='gray', linestyle='--', lw = 1.5)
-	ax[1].set_xlabel(r'$Q_{\text{in}} \, (V)$')
+	ax[1].set_xlabel(r'$Q_{\text{ in}} \, (nC)$')
 	ax[1].set_ylabel('Residuals (V)')
-	ax[1].legend(ncol=2)
+	ax[1].legend(loc = 'upper left')
 	#ax[1].set_ylim(-0.35, 0.5)
 	plt.tight_layout()
 	plt.savefig(outpath, dpi=150)
