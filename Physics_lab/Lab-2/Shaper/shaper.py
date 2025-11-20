@@ -28,6 +28,10 @@ print(f"C2: {C2[0]*1e12:.2f} ± {C2[1]*1e12:.2f} pF")
 print(f'C1_noback: {C1_eff[0]*1e12:.2f} ± {C1_eff[1]*1e12:.2f} pF')
 print(f'C2_noback: {C2_eff[0]*1e12:.2f} ± {C2_eff[1]*1e12:.2f} pF')
 
+print("Resistence: ")
+print("R1: " + helper.format_value_error(R1[0], R1[1]) + " Ohm")
+print("R2: " + helper.format_value_error(R2[0], R2[1]) + " Ohm")
+
 # Computing Tau1 and Tau2
 Tau1 = [R1[0] * C1_eff[0], np.sqrt( (R1[1]*C1_eff[0])**2 + (C1_eff[1]*R1[0])**2 )]
 Tau2 = [R2[0] * C2_eff[0], np.sqrt( (R2[1]*C2_eff[0])**2 + (C2_eff[1]*R2[0])**2 )]
@@ -106,7 +110,16 @@ def main():
 
 	# Computing amplification in db
 	A = 20 * np.log10(H)
-	sA = 20 * sH /(np.log10(10) * H)
+	sA = 20 * sH /(np.log(10) * H)
+
+	# Printing data for shaper bode
+	print(" ")
+	print("Shaper BODE data: ")
+	print("f(Hz) - Vout - Vout error - A(db) - A error")
+	for i in range(len(f)):
+		print(f"{f[i]:.0f}\t{helper.format_value_error(Vout[i], sVout[i])}\t{helper.format_value_error(A[i], sA[i])}")
+
+	print(f"Vin: {helper.format_value_error(Vin[0], Vin[1])}")
 
 	# FITTING FOR SHAPER WITH DIFFERENT TAU
 
@@ -163,9 +176,9 @@ def main():
 	H_fit_grid = helper.shaper_module(f_grid, *popt)
 	A_fit_grid = 20 * np.log10(H_fit_grid)
 	A_max = np.max(A_fit_grid)
-	A_6db = A_max - 6
+	A_3db = A_max - 3
 	# Searching for frequencies where the module crosses Amax - 6dB
-	mask = A_fit_grid >= A_6db
+	mask = A_fit_grid >= A_3db
 	if np.any(mask):
 		idx = np.where(mask)[0]
 		f_low = f_grid[idx[0]]
@@ -204,7 +217,7 @@ def main():
 	fig, ax = plt.subplots(2, 1, figsize=(6.5,6.5), sharex=True, height_ratios=[2, 0.6])
 	ax[0].errorbar(f/helper.TO_K, A, yerr=sA, fmt='o', label='Data (dB)', color='black', ms=3, lw=1.6, zorder = 3)
 	ax[0].plot(f_fine/helper.TO_K, 20*np.log10(y_fit), label='Fitted function (dB)', color='blue', lw=1.2)
-	ax[0].set_ylabel(r'$|\, H \, | \, = \, \frac{V_{\text{out}}}{V_{\text{in}}} \, (db)$')
+	ax[0].set_ylabel(r'$|\, H \, | \, = \, \frac{V_{\text{out}}}{V_{\text{in}}} \, (dB)$')
 	ax[0].axvspan(f_low/helper.TO_K, f_high/helper.TO_K, color='gold', alpha=0.4, label='Bandwidth region')
 	ax[0].legend(loc='upper right')
 	ax[0].set_title('Shaper - Transfer function abs (dB)')
@@ -282,7 +295,7 @@ def main():
 	ax2.text(400, 0.21, r'$\tau_{{\,\text{{ exp2}}}}$ = {a:.0f} ± {b:.0f} µs'.format(a=Tau2[0]*helper.TO_MU, b=Tau2[1]*helper.TO_MU), size=12)
 	ax2.text(400, 0.19, r'$t_{{\,\text{{1}}}}$ = {a:.1f}'.format(a= helper.compatibility(popt[0], perr[0], Tau1[0], Tau1[1])), size=12)
 	ax2.text(400, 0.17, r'$t_{{\text{{2}}}}$ = {:.1f}'.format(helper.compatibility(popt[1], perr[1], Tau2[0], Tau2[1])), size=12)
-	ax2.text(400, 0.15, r'$\chi^2_{{\text{{ exp}}}} \, / \, DOF$ = {a:.1f} / {b:.0f}'.format(a=chi2_theoretical, b=len(f)-1), size=12)
+	ax2.text(400, 0.15, r'$\chi^2_{{\text{{ exp}}}} \, / \, DOF$ = {a:.1f} / {b:.0f}'.format(a=chi2_theoretical, b=len(f)-2), size=12)
 	ax2.set_xlabel(r'$f$ (kHz)')
 	# ax[1].axhline(0, color='gray', linestyle='--', lw = 1.5, label = "Ideal value")
 	# ax[1].set_xlabel(r'$f \, (Hz)$')
@@ -299,7 +312,7 @@ def main():
 	ax[0].plot(f_fine/helper.TO_K, 20*np.log10(y_fit), label='Fitted function (dB)', color='dodgerblue', lw=1.4)
 	ax[0].plot(f_fine/helper.TO_K, 20*np.log10(y_fitD), label='Expected function (dB)', color='darkred', lw=1.4, linestyle='--')
 	ax[0].fill_between(f_fine/helper.TO_K, 20*np.log10(yD_m1sigma), 20*np.log10(yD1sigma), color='darkorange', alpha=0.4, label='Expected function ± 1 σ')
-	ax[0].set_ylabel(r'$|\, H \, | \, = \, \frac{V_{\text{out}}}{V_{\text{in}}} \, (db)$')
+	ax[0].set_ylabel(r'$|\, H \, | \, = \, \frac{V_{\text{out}}}{V_{\text{in}}} \, (dB)$')
 	#ax[0].axvspan(f_low/helper.TO_K, f_high/helper.TO_K, color='gold', alpha=0.4, label='Bandwidth region')
 	ax[0].legend(loc='lower right', ncol = 2)
 	ax[0].set_title('Shaper - Expected Transfer function analysis (dB)')
@@ -338,6 +351,8 @@ def main():
 	f1, amp1 = helper.read_data_xy(data_path1)
 	f2, amp2 = helper.read_data_xy(data_path2)
 
+	f1, amp1 = f1[100:len(f1)-18], amp1[100:len(amp1)-18]  # Limiting data for better visualization
+
 	# Searching for possibile reading errors
 	if f0.size == 0: 
 		raise RuntimeError('No valid data read from file.')
@@ -347,9 +362,8 @@ def main():
 	ax.errorbar(f/helper.TO_K, H, yerr = sH, fmt='o', label='Experimental Data', color='black', ms=3, lw=1.6, zorder = 3)
 	ax.plot(f_fine/helper.TO_K, y_fit, label='Fitted function', color='dodgerblue', lw=1.5)
 	ax.plot(f0/helper.TO_K, 10**(amp0/20), label='LTspice Simulation no probe', color='darkorange', lw=1.5)
-	ax.plot(f1/helper.TO_K, 10**(amp1/20), label='LTspice Simulation no correction', color='limegreen', lw=1.5)
-	ax.plot(f2/helper.TO_K, 10**(amp2/20), label='LTspice Simulation with correction', color='blue', lw=1.5)
-	ax.plot(f_fine/helper.TO_K, y_fitD, label='Expected function', color='firebrick', lw=1.5, linestyle='--')
+	ax.plot(f1/helper.TO_K, 10**(amp1/20), label='LTspice Simulation with probe', color='firebrick', lw=1.5)
+	ax.plot(f_fine/helper.TO_K, y_fitD, label='Expected function', color='dimgrey', lw=1.5, linestyle='--')
 	# ax.plot(f_fine/helper.TO_K, helper.shaper_module(f_fine, tau1 = Tau1[0] + R1[0]*2e-12, tau2 = Tau2[0] + R2[0]*2e-12, semplified=False), label='Tau2 + 2 pF (dB)', color='purple', lw=1.2)
 
 	# ax.plot(f2/helper.TO_K, amp2, label='LTspice Simulation 1 (dB)', color='green', lw=1.2)
@@ -364,18 +378,66 @@ def main():
 	ax.errorbar(f/helper.TO_K, A, yerr = sA, fmt='o', label='Experimental Data', color='black', ms=3, lw=1.6, zorder = 3)
 	ax.plot(f_fine/helper.TO_K, 20*np.log10(y_fit), label='Fitted function', color='dodgerblue', lw=1.5)
 	ax.plot(f0/helper.TO_K, amp0, label='LTspice Simulation no probe', color='darkorange', lw=1.5)
-	ax.plot(f1/helper.TO_K, amp1, label='LTspice Simulation no correction', color='limegreen', lw=1.5)
-	ax.plot(f2/helper.TO_K, amp2, label='LTspice Simulation with correction', color='blue', lw=1.5)
-	ax.plot(f_fine/helper.TO_K, 20*np.log10(y_fitD), label='Expected function', color='firebrick', lw=1.5, linestyle='--')
+	ax.plot(f1/helper.TO_K, amp1, label='LTspice Simulation with probe', color='firebrick', lw=1.5)
+	ax.plot(f_fine/helper.TO_K, 20*np.log10(y_fitD), label='Expected function', color='dimgrey', lw=1.5, linestyle='--')
 	# ax.plot(f2/helper.TO_K, amp2, label='LTspice Simulation 1 (dB)', color='green', lw=1.2)
 	# ax.plot(f3/helper.TO_K, amp3, label='LTspice Simulation 2 (dB)', color='red', lw=1.2)
-	ax.set_ylabel(r'$|\, H \, | \, = \, \frac{V_{\text{out}}}{V_{\text{in}}} \, (db)$')
-	ax.legend(loc='upper right')
+	ax.set_ylabel(r'$|\, H \, | \, = \, \frac{V_{\text{out}}}{V_{\text{in}}} \, (dB)$')
+	ax.legend(loc='lower right', ncol = 2)
 	ax.set_xscale('log')
 	ax.set_title('Shaper - LTspice Simulation Comparison and correction (dB)')
 	ax.set_xlabel(r'$f$ (kHz)')
 	# endregion
 
+	# region - Time domain simulation
+	# Getting experimental data of the time domain simulation
+	base_dir = os.path.dirname(os.path.abspath(__file__))
+	data_path_time = os.path.join(base_dir, 'data_shaper_time.txt')
+	data_path_time_LT = os.path.join(base_dir, 'data_shaper_time_LT.txt')
+
+	if not os.path.exists(data_path_time) or not os.path.exists(data_path_time_LT):
+		raise FileNotFoundError(f'Data file not found: {data_path_time} or {data_path_time_LT}')
+	
+	# Reading data from file
+	# Data style: time (s), voltage (V)
+	t_time, V_time = helper.read_data_xy(data_path_time)
+	t_time_LT, V_time_LT = helper.read_data_xy(data_path_time_LT)
+
+	t_time_LT = t_time_LT - 13e-6  # Adjusting time offset from LTspice
+
+	# Downsampling experimental data for better visualization
+	t_time1 = t_time[:500]
+	V_time1 = V_time[:500]
+
+	t_time2 = t_time[500:]
+	V_time2 = V_time[500:]
+
+	t_time1 = t_time1[::10]
+	V_time1 = V_time1[::10]
+
+	t_time2 = t_time2[::50]
+	V_time2 = V_time2[::50]
+
+	t_time = np.concatenate((t_time1, t_time2))
+	V_time = np.concatenate((V_time1, V_time2))
+
+	sV_time = helper.voltage_error(V_time, 0.05)  # Voltage error with 0.5 V scale
+	st_time = helper.time_error(25e-6)  # Time error with 1 ns scale
+
+	# t_time_LT = t_time_LT + 87e-6
+	# V_time_LT = V_time_LT*2
+
+	# Plotting time domain data
+	fig, ax = plt.subplots(1, 1, figsize=(6.5,6.5))
+	ax.errorbar(t_time*helper.TO_MU, V_time, xerr = st_time*helper.TO_MU, yerr=sV_time, fmt='o', label='Experimental Data', color='black', ms=3, lw=1.6, zorder = 3)
+	ax.plot(t_time_LT*helper.TO_MU, V_time_LT, label='LTspice Simulation', color='darkorange', lw=1.5)
+	ax.set_xlabel(r'Time (µs)')
+	ax.set_ylabel(r'Voltage (V)')
+	ax.set_title('Shaper - Time Domain Response')
+	ax.legend(loc='upper right')
+
+
+	# endregion
 	plt.show()
 
 if __name__ == '__main__':

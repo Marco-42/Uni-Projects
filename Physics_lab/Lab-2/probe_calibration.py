@@ -69,8 +69,8 @@ def main():
 
 	# Plotting LTspice data along with experimental data and fit
 	fig, ax = plt.subplots(1, 1, figsize=(6.5,6.5))
-	ax.plot(f0*helper.TO_MU, amp0, label='Compensated probe', color='darkorange', lw=1.5)
-	ax.plot(f1*helper.TO_MU, amp1, label='-0.1 pF compensation error', color='seagreen', lw=1.5)
+	ax.plot(f0*helper.TO_MU, amp0, label='Compensated probe', color='darkorange', lw=1.5, zorder = 1)
+	ax.plot(f1*helper.TO_MU, amp1, label='-0.1 pF compensation error', color='seagreen', lw=1.5, zorder = 0)
 	# ax.plot(f_fine/helper.TO_K, helper.shaper_module(f_fine, tau1 = Tau1[0] + R1[0]*2e-12, tau2 = Tau2[0] + R2[0]*2e-12, semplified=False), label='Tau2 + 2 pF (dB)', color='purple', lw=1.2)
 
 	# ax.plot(f2/helper.TO_K, amp2, label='LTspice Simulation 1 (dB)', color='green', lw=1.2)
@@ -79,6 +79,7 @@ def main():
 	ax.legend(loc='lower right')
 	ax.set_title('Probe - LTspice compensation simulation')
 	ax.set_xlabel(r'$Time \, (\mu s)$')
+	plt.savefig(os.path.join(base_dir, 'probe_compensation_simulation.png'), dpi=150)
 
 	plt.show()
 

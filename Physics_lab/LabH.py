@@ -198,41 +198,6 @@ def read_data_xy(path):
 	# Convert to numpy arrays and return
 	return np.array(x, dtype=float), np.array(y, dtype=float)
 
-	COLUMN = 3  # Number of columns in the data file
-
-	x = []
-	y = []
-	y_error = []
-
-	with open(path, 'r', encoding='utf-8') as f:
-
-		# File adapted to a common format
-		for line in f:  # Take all the different lines
-			line = line.strip()
-			if not line or line.startswith('#'):  # Ignore empty lines and comments
-				continue
-			# normalize decimal comma if present
-			line = line.replace(',', '.')
-			# split on whitespace
-			parts = line.split()
-
-			# Extracting data from adapted file
-			nums = []
-			for p in parts:
-				try:
-					nums.append(float(p))
-				except ValueError:
-					continue
-				if len(nums) >= COLUMN:
-					break
-			if len(nums) >= COLUMN:
-				x.append(nums[0])
-				y.append(nums[1])
-				y_error.append(nums[2])
-
-	# Convert to numpy arrays and return
-	return np.array(x, dtype=float), np.array(y, dtype=float), np.array(y_error, dtype=float)
-
 # ============= FUNCTIONS MODELS =============
 # Model functions for fitting
 
@@ -251,6 +216,7 @@ def odr_linear(beta, x):
 	"""beta[0] * x + beta[1]"""
 	return beta[0] * x + beta[1]
 
+# Module of the shaper characteristic function for odr
 def odr_shaper_module(beta, f):
 	"""Module of the shaper characteristic function with different tau - beta[0] = tau1, beta[1] = tau2"""
 	w = 2 * np.pi * f
@@ -258,12 +224,14 @@ def odr_shaper_module(beta, f):
 	tau2 = beta[1]
 	return tau1 * w / np.sqrt(((tau2**2)*w**2 + 1)*((tau1**2)*w**2 + 1))
 
+# Module of the shaper characteristic function for odr with semplified tau
 def odr_shaper_module_semplified(beta, f):
 	"""Module of the shaper characteristic function with same tau - beta[0] = tau, beta[1] = offset"""
 	w = 2 * np.pi * f
 	tau = beta[0]
 	return beta[1]*tau * w / ((tau**2)*w**2 + 1)
 
+# Module of the inverting oamp characteristic function for odr
 def odr_inverting_oamp_module(beta, f):
 	"""Module of the inverting oamp characteristic function """
 	w = 2 * np.pi * f
@@ -290,6 +258,7 @@ def shaper_module(f, tau1, tau2 = 0, offset = 0, semplified=False):
 	else: 
 		return tau1 * w / np.sqrt(((tau2**2)*w**2 + 1)*((tau1**2)*w**2 + 1))
 
+# Model function for the module of the inverting oamp characteristic function
 def inverting_oamp_module(f, A, f_t):
 	"""Module of the inverting oamp characteristic function """
 	w = 2 * np.pi * f
@@ -395,6 +364,7 @@ def fit_linear(x, y, x_error=None, y_error=None, init0=None):
 	# Return optimized parameters and their uncertainties
 	return params, params_err, x_residual, y_residual, chi2
 
+# Shaper module fit function(module of the transfer function)
 def fit_shaper_module(f, H, H_error=None, init0=None, semplified=False):
 	"""Fit using ODR of the shaper characteristics function module(errors on y axis) -  freq, |H|, |H|_error, init0.
 
@@ -443,6 +413,7 @@ def fit_shaper_module(f, H, H_error=None, init0=None, semplified=False):
 	# Return optimized parameters and their uncertainties
 	return params, params_err, x_residual, y_residual, chi2
 
+# Inverting OAMP module fit function(module of the transfer function)
 def fit_inverting_oamp_module(f, H, H_error=None, init0=None):
 	"""Fit using ODR of the inverting OAMP characteristics function module(errors on y axis) -  freq, |H|, |H|_error, init0.
 
@@ -486,6 +457,7 @@ def fit_inverting_oamp_module(f, H, H_error=None, init0=None):
 	# Return optimized parameters and their uncertainties
 	return params, params_err, x_residual, y_residual, chi2
 
+# Cos^2 fit function
 def fit_cos2(x, y, y_error=None, init0=None):
 	"""Cos^2 fit using ODR (errors on y axis) -  x, y, y_error, init0.
 
@@ -532,10 +504,22 @@ def fit_cos2(x, y, y_error=None, init0=None):
 # ============= ERROR FUNCTIONS ==============
 # Functions to compute errors
 
-# Voltage error function
+# Voltage error function for oscilloscope
 def voltage_error(V, V_scale):
 	"""Compute voltage error given voltage V and voltage scale V_scale."""
 	return np.sqrt(pow(V_scale/(10*np.sqrt(3)), 2) + pow(V*3/(np.sqrt(3)*100), 2)) # 1/10 reading error with max uniform distribution + 3% scale error with max uniform distribution
+
+# Voltage error function for multimeter
+def voltage_error_multimeter(V, V_scale):
+	"""Compute voltage error given voltage V and voltage scale V_scale."""
+	if V_scale == 0.6: # 600 mV scale
+		return np.sqrt(pow(0.05*V/50, 2)/12 + pow(0.0001*4, 2)/12) # 0.05% reading error with max triangular distribution + 0.1 mV scale error with max triangular distribution
+	elif V_scale == 6:  # 6V scale
+		return np.sqrt(pow(0.05*V/50, 2)/12 + pow(0.001*4, 2)/12) # 0.05% reading error with max triangular distribution + 1 mV scale error with max triangular distribution
+
+# Current error function for multimeter
+def current_error_multimeter(I, I_scale):
+	return 0 # TODO
 
 # Time error function
 def time_error(t_scale):
@@ -545,7 +529,9 @@ def time_error(t_scale):
 # Resistance error function
 def resistance_error(R, R_scale): # TODO
 	"""Compute resistance error given resistance R."""
-	if R_scale == 100e3 or R_scale == 10e3:
+	if R_scale == 10e3:
+		return np.sqrt(pow(0.07*R/50, 2)/12 + pow(8*2, 2)/12)
+	elif R_scale == 100e3:
 		return np.sqrt(pow(0.07*R/50, 2)/12 + pow(8*20, 2)/12)
 	
 # Capacitance error function
@@ -567,3 +553,19 @@ def compatibility(value1, error1, value2, error2):
 def chi_squared(observed, expected, errors):
 	"""Compute chi-square statistic - observed, expected, total errors."""
 	return np.sum(((observed - expected) / errors) ** 2)
+
+# ============= VISUALIZATION ================
+
+# Function to format value ± error with correct significant figures
+def format_value_error(value, error):
+	"""Format a value with its error, rounding to the correct significant figures:  value - error."""
+	# Determine the order of magnitude of the error
+	if error == 0:
+		return f"{value:.2f} ± 0"
+	exp = int(np.floor(np.log10(abs(error))))
+	rounded_error = round(error, -exp)
+	# round the value to the same decimal place
+	rounded_value = round(value, -exp)
+	# Build the string
+	fmt = f"{{:.{max(0, -exp)}f}}\t{{:.{max(0, -exp)}f}}"
+	return fmt.format(rounded_value, rounded_error)

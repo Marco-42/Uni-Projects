@@ -49,6 +49,10 @@ plt.rcParams['axes.prop_cycle'] = cycler(color=['b','g','r','c','m','y','k'])
 #============= MAIN FUNCTION ================
 def main():
 
+	print("OAMP resistence values: ")
+	print("R1 = {a:.2f} ± {b:.2f} Ohm".format(a=R1[0], b=R1[1]))
+	print("Rf = {a:.2f} ± {b:.2f} Ohm".format(a=Rf[0], b=Rf[1]))
+	
 	# LINEAR FIT VTC
 
 	# resolve the relative path to the data file in the same folder as the script
@@ -70,6 +74,11 @@ def main():
 
 	sx = np.sqrt(pow(x_scale/(10*np.sqrt(3)), 2) + pow(x*3/(np.sqrt(3)*100), 2)) # 1/10 reading error with max uniform distribution + 3% scale error with max uniform distribution
 	sy = np.sqrt(pow(y_scale/(10*np.sqrt(3)), 2) + pow(y*3/(np.sqrt(3)*100), 2)) # 1/10 reading error with max uniform distribution + 3% scale error with max uniform distribution
+
+	print("VNC data: ")
+	print("Vin - Vin error - Vout - Vout error")
+	for i in range (len(x)):
+		print(f"{helper.format_value_error(x[i], sx[i])}\t{helper.format_value_error(y[i], sy[i])}")
 
 	# Searching for initial parameters  
 	m = 4.8
@@ -110,8 +119,8 @@ def main():
     # Plotting
 	fig, ax = plt.subplots(2, 1, figsize=(6.5,6.5),sharex=True, height_ratios=[2, 0.6])
 	ax[0].errorbar(x, y, xerr=sx, yerr=sy, fmt='o', label='Data', color='black', ms = 3, lw = 1.6, zorder=3)
-	ax[0].plot(x_fine, y_fit, label='Linear fit', color='firebrick', lw = 1.2)
-	ax[0].axhline(saturated_value[0], color='darkorange', lw=1.5, label='Saturated voltage', linestyle='--')
+	ax[0].plot(x_fine, y_fit, label='Linear fit', color='firebrick', lw = 1.5)
+	ax[0].axhline(saturated_value[0], color='darkorange', lw=1.5, label='Saturation voltage', linestyle='--')
 	ax[0].set_ylabel(r'$V_{\text{out}} \, (V)$')
 	ax[0].text(0.2, 25, r'$V_{{\text{{ sat}}}}$ = {a:.1f} $\pm$ {b:.1f} V'.format(a=saturated_value[0], b=saturated_value[1]), size=12)
 	ax[0].text(0.2, 22.5, r'$|A|_{{\text{{ sat}}}}$ = {a:.1f} $\pm$ {b:.1f}'.format(a=A_from_saturation[0], b=A_from_saturation[1]), size=12)
@@ -133,7 +142,7 @@ def main():
 	ax[1].legend(ncol=2, loc='upper left')
 	ax[1].set_ylim(-1.4, 1.3)
 	plt.tight_layout()
-	plt.savefig(outpath, dpi=150)
+	plt.savefig(os.path.join(base_dir, 'VTC.png'), dpi=150)
 	print(f'Graph saved to: {outpath}')
 	
 	# BODE FIT
@@ -167,8 +176,12 @@ def main():
 	
 	# Computing amplification in db
 	A = 20 * np.log10(H)
-	sA = 20 * sH /(np.log10(10) * H)
+	sA = 20 * sH /(np.log(10) * H)
 
+	print("OAMP BODE data: ")
+	print("f(Hz) - Vout - Vout error - A(db) - A error")
+	for i in range (len(f)):
+		print(f"{f[i]:.0f}\t{helper.format_value_error(Vout[i], sVout[i])}\t{helper.format_value_error(A[i], sA[i])}")
 	# FITTING FOR INVERTING OAMP
 
 	# Searching for initial parameters
@@ -230,10 +243,10 @@ def main():
 	# Plotting
 	fig, ax = plt.subplots(2, 1, figsize=(6.5,6.5),sharex=True, height_ratios=[2, 0.6])
 	ax[0].errorbar(f/helper.TO_K, H, yerr=sH, fmt='o', label='Data', color='black', ms = 3, lw = 1.6, zorder = 3)
-	ax[0].plot(f_fine/helper.TO_K, y_fit, label='Fitted function', color='blue', lw = 1.2)
+	ax[0].plot(f_fine/helper.TO_K, y_fit, label='Fitted function', color='blue', lw = 1.5)
 	#ax[0].plot(np.linspace(30*1e3, 300*1e3, 400)/helper.TO_K, shaper_module_asymptotic(np.linspace(30*1e3, 300*1e3, 400), popt[1]), label='Asymptotic function', color='deepskyblue', lw = 1.2, linestyle='--')
 	ax[0].set_ylabel(r'$|\, H \, | \, = \, \frac{V_{\text{out}}}{V_{\text{in}}} \, (V/V)$')
-	ax[0].set_title('Inverting OAMP - Transfer function abs')
+	ax[0].set_title('Inverting OP-AMP - Transfer function abs')
 	ax[1].errorbar(f/helper.TO_K, V_residual2, yerr=V_residual_err2, fmt='o', label='Residuals', color='black', ms = 3, lw = 1.6, zorder = 3)
 	ax[1].axhline(weighted_mean_V_residual2, color='gray', linestyle='--', lw = 1.5, label = 'Weighted mean')
 	ax[0].text(50, 3, r'$A_{{\text{{ fit}}}}$ = {a:.2f} ± {b:.2f}'.format(a=popt2[0], b=perr2[0]), size=12)
@@ -248,23 +261,22 @@ def main():
 	ax[1].text(140, 0.15, r'$t_{{\text{{ 0 - mean}}}}$ = {a:.2f}'.format(a=helper.compatibility(0, 0, weighted_mean_V_residual2, weighted_mean_V_residual_std2)), size=12)
 	#ax[1].text(100, -0.015, r'$t_{{\text{{0 - mean}}}}$ = {a:.2f}'.format(a=helper.compatibility(0, 0, weighted_mean_V_residual, weighted_mean_V_residual_std)), size=12)
 	plt.tight_layout()
-	plt.savefig(os.path.join(base_dir, 'shaper_H_diff_tau.png'), dpi=150)
+	plt.savefig(os.path.join(base_dir, 'oamp_freq.png'), dpi=150)
 	#print(f'Graph saved to: {outpath}')
 
 	# Plotting bode --> module in dB
 	fig, ax = plt.subplots(2, 1, figsize=(6.5,6.5), sharex=True, height_ratios=[2, 0.6])
 	ax[0].errorbar(f/helper.TO_K, A, yerr=sA, fmt='o', label='Data (dB)', color='black', ms=3, lw=1.6, zorder = 3)
-	ax[0].plot(f_fine/helper.TO_K, 20*np.log10(y_fit), label='Fitted function (dB)', color='blue', lw=1.4, zorder = 2)
-	ax[0].set_ylabel(r'$|\, H \, | \, = \, \frac{V_{\text{out}}}{V_{\text{in}}} \, (db)$')
-	ax[0].plot(f_fine_linear/helper.TO_K, y_fit_linear, label='Linear fit last 3 points', color='deepskyblue', lw=1.4, linestyle='--', zorder = 1)
+	ax[0].plot(f_fine/helper.TO_K, 20*np.log10(y_fit), label='Fitted function (dB)', color='blue', lw=1.5, zorder = 2)
+	ax[0].set_ylabel(r'$|\, H \, | \, = \, \frac{V_{\text{out}}}{V_{\text{in}}} \, (dB)$')
+	ax[0].plot(f_fine_linear/helper.TO_K, y_fit_linear, label='Linear fit last 3 points', color='deepskyblue', lw=1.5, linestyle='--', zorder = 1)
 	#ax[0].axvspan(f_low/helper.TO_K, f_high/helper.TO_K, color='gold', alpha=0.4, label='Bandwidth region')
-	ax[0].axhline(20*np.log10(saturated_small_freq[0]/Vin[0]), color='darkorange', lw=1.5, label='Saturated voltage', linestyle='--', zorder = 0)
-	ax[0].text(0.12, 12, r'$f_{{\text{{ t}}}}$ = {a:.0f} ± {b:.0f}'.format(a=popt2[1]/helper.TO_K, b=perr2[1]/helper.TO_K), size=12)
-	ax[0].text(0.12, 11.2, r'$f_{{\text{{ intersection}}}}$ = {a:.0f} ± {b:.0f} KHz'.format(a=f_cutoff[0]/helper.TO_K, b=f_cutoff[1]/helper.TO_K), size=12)
-	ax[0].text(0.12, 10.4, r'$t_{{\text{{ f}}}}$ = {a:.2f}'.format(a=helper.compatibility(popt2[1], perr2[1], f_cutoff[0], f_cutoff[1])), size=12)
-	ax[0].text(0.12, 9.6, r'$m_{{\text{{ linear}}}}$ = {a:.1f} ± {b:.1f} db/decade'.format(a=popt_linear[0], b=perr_linear[0]), size=12)
+	ax[0].axhline(20*np.log10(saturated_small_freq[0]/Vin[0]), color='darkorange', lw=1.5, label='Amplification low frequency', linestyle='--', zorder = 0)
+	ax[0].text(0.12, 12, r'$f_{{\text{{ t}}}}$ = {a:.0f} ± {b:.0f} KHz'.format(a=popt2[1]/helper.TO_K, b=perr2[1]/helper.TO_K), size=12)
+	ax[0].text(0.12, 11.2, r'$f_{{\text{{ punctual}}}}$ = {a:.0f} ± {b:.0f} KHz'.format(a=460, b=6), size=12)
+	ax[0].text(0.12, 10.4, r'$m_{{\text{{ linear}}}}$ = {a:.1f} ± {b:.1f} dB/decade'.format(a=popt_linear[0], b=perr_linear[0]), size=12)
 	ax[0].legend(loc='lower left')
-	ax[0].set_title('Inverting OAMP - Transfer function abs (dB)')
+	ax[0].set_title('Inverting OP-AMP - Transfer function abs (dB)')
 	ax[0].set_xscale('log')
 	ax[0].set_xlim(0.07, 3000)
 	#ax[1].text(0.15, -1.8, r'$t_{{\text{{0 - mean}}}}$ = {a:.2f}'.format(a=helper.compatibility(0, 0, weighted_mean_V_residual, weighted_mean_V_residual_std)), size=12)
@@ -272,10 +284,10 @@ def main():
 	ax[1].axhline(weighted_mean_V_residual2, color='gray', linestyle='--', lw=1.5, label = 'Weighted mean')
 	ax[1].set_xlabel(r'$f$ (kHz)')
 	ax[1].set_ylabel('Residuals (dB)')
-	ax[1].legend(ncol=2, loc='lower right')
-	# ax[1].set_ylim(-2.8, 2)
+	ax[1].legend(ncol=2, loc='lower left')
+	ax[1].set_ylim(-0.6, 0.4)
 	plt.tight_layout()
-	plt.savefig(os.path.join(base_dir, 'shaper_H_diff_tau_dB.png'), dpi=150)
+	plt.savefig(os.path.join(base_dir, 'oamp_bode.png'), dpi=150)
 
 	# region - LTspice simulation data plotting
 
@@ -314,12 +326,14 @@ def main():
 	ax.plot(f0/helper.TO_K, amp0, label='LTspice Simulation', color='darkorange', lw=1.5)
 	# ax.plot(f2/helper.TO_K, amp2, label='LTspice Simulation 1 (dB)', color='green', lw=1.2)
 	# ax.plot(f3/helper.TO_K, amp3, label='LTspice Simulation 2 (dB)', color='red', lw=1.2)
-	ax.set_ylabel(r'$|\, H \, | \, = \, \frac{V_{\text{out}}}{V_{\text{in}}} \, (db)$')
-	ax.legend(loc='upper right')
+	ax.set_ylabel(r'$|\, H \, | \, = \, \frac{V_{\text{out}}}{V_{\text{in}}} \, (dB)$')
+	ax.legend(loc='lower left', fontsize=12)
 	ax.set_xscale('log')
 	ax.set_title('LTspice Simulation Comparison (dB)')
 	ax.set_xlabel(r'$f$ (kHz)')
+	plt.savefig(os.path.join(base_dir, 'oamp_LT.png'), dpi=150)
 	# endregion
+
 
 	plt.show()
 
