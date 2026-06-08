@@ -336,3 +336,51 @@ def gauss_fit(x, y, sy, p0=None):
             maxfev=20000,
         )
     return popt, np.sqrt(np.diag(pcov))
+
+# ==============================================
+#             FINGER PLOT ANALYSIS
+# ==============================================
+
+# Linear function for fitting distance between peaks vs voltage
+def linear_func(x, a, b):
+    return a * x + b
+
+# Linear fit to distance between peaks vs voltage
+def linear_fit(x, y, sy):
+    """
+    Fit a linear function to the data (x, y, sy) and return the optimal parameters.
+    """
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    sy = np.asarray(sy, dtype=float)
+
+    if x.size < 2 or y.size < 2:
+        raise ValueError("Need at least 2 points to fit a line")
+
+    # Avoid zero or invalid uncertainties in the fit weights.
+    sy = np.where(np.isfinite(sy) & (sy > 0), sy, 1.0)
+
+    p0 = [0.0, np.mean(y)]
+
+    try:
+        popt, pcov = curve_fit(
+            linear_func,
+            x,
+            y,
+            p0=p0,
+            sigma=sy,
+            absolute_sigma=True,
+            maxfev=5000,
+        )
+    except RuntimeError:
+        # Retry once with a higher iteration budget.
+        popt, pcov = curve_fit(
+            linear_func,
+            x,
+            y,
+            p0=p0,
+            sigma=sy,
+            absolute_sigma=True,
+            maxfev=20000,
+        )
+    return popt, np.sqrt(np.diag(pcov))

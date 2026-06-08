@@ -22,7 +22,7 @@ params = {'legend.fontsize': '10',
           'legend.framealpha':    '0.8',      # legend patch transparency
           'legend.facecolor':     'w', # inherit from axes.facecolor; or color spec
           'legend.edgecolor':     'w',      # background patch boundary color
-          'figure.figsize': (6, 4),
+          'figure.figsize': (8, 6),
          'axes.labelsize': '10',
          'figure.titlesize' : '14',
          'axes.titlesize':'12',
@@ -54,6 +54,13 @@ number_of_peaks = 8
 CODE = "5_3_2_2_2" 
 data_directory_name = "PST_" + CODE + "_HV_"
 path_name = "./data/"
+
+distance_vs_voltage = []
+distance_between_peaks = []
+
+distance_first_peak_and_pedestal = []
+
+sigma_vs_voltage = []
 
 for v in voltage:
 
@@ -101,7 +108,7 @@ for v in voltage:
         chi_square.append(np.sum((y_peak - hp.gauss_function(x_peak, *popt)) ** 2 / (sy_peak ** 2)))
 
     # Plotting the finger plot
-    plt.figure()
+    plt.figure(figsize=(8, 6))
     plt.plot(ADC, counts, label = "Data", color = "black")
     plt.plot(ADC[peaks_indices], peaks_values, "x", label="Peaks")
 
@@ -121,6 +128,7 @@ for v in voltage:
         plt.xlim(left_val, right_val)
     else:
         plt.xlim(1500, 5000)
+    plt.tight_layout()
     plt.savefig(path_name + data_directory_name + str(v) + "V/" + "finger_plot.png")
 
     # Saving the fit parameters in a txt file (ensure results dir exists; recreate file)
@@ -133,4 +141,98 @@ for v in voltage:
         for i in range(1, min(number_of_peaks+1, len(peaks_indices))):
             f.write(f"{mean_values[i][0]} {mean_values[i][1]}\n")
 
+    # Finding distance between peaks and its uncertainty using error propagation and saving it in a list for each voltage
+    for i in range(2, min(number_of_peaks+1, len(peaks_indices))):
+        distance_between_peaks.append([mean_values[i][0] - mean_values[i-1][0], np.sqrt(mean_values[i][1]**2 + mean_values[i-1][1]**2)])
+
+    # Finding distance between the first peak and the pedestal and its uncertainty using error propagation and saving it in a list for each voltage
+    distance_first_peak_and_pedestal.append([mean_values[1][0] - mean_values[0][0], np.sqrt(mean_values[1][1]**2 + mean_values[0][1]**2)])
+
+    # Finding the mean distance for the fixed voltage
+    distance_vs_voltage.append([statistics.mean([d[0] for d in distance_between_peaks]), np.sqrt(statistics.mean([d[1]**2 for d in distance_between_peaks]))/len(distance_between_peaks)])
+
+    # Plotting distance between peaks for the fixed voltage
+    plt.figure(figsize=(8, 6))
+    plt.errorbar(np.arange(len(distance_between_peaks)), [d[0] for d in distance_between_peaks], yerr=[d[1] for d in distance_between_peaks], fmt="o", color = 'darkblue')
+    plt.axhline(y=statistics.mean([d[0] for d in distance_between_peaks]), color='darkorange', linestyle='--', label=f"Mean: {statistics.mean([d[0] for d in distance_between_peaks]):.2f} ± {np.sqrt(statistics.mean([d[1]**2 for d in distance_between_peaks]))/len(distance_between_peaks):.2f}")
+    plt.fill_between(np.arange(len(distance_between_peaks)), statistics.mean([d[0] for d in distance_between_peaks]) - np.sqrt(statistics.mean([d[1]**2 for d in distance_between_peaks]))/len(distance_between_peaks), statistics.mean([d[0] for d in distance_between_peaks]) + np.sqrt(statistics.mean([d[1]**2 for d in distance_between_peaks]))/len(distance_between_peaks), alpha=0.5, color='gold')
+    plt.xlabel("Peak Number")
+    plt.ylabel("Distance between Peaks (ADC)")
+    plt.title("Distance between peaks for " + str(v) + " V")
+    plt.tight_layout()
+    plt.savefig(path_name + data_directory_name + str(v) + "V/" + "distance_between_peaks.png")
+
+    # Plotting the same thing but for gaussian sigma
+    plt.figure(figsize=(8, 6))
+    plt.errorbar(np.arange(len(sigma_values[1:number_of_peaks + 1][:])), [s[0] for s in sigma_values[1:number_of_peaks + 1][:]], yerr=[s[1] for s in sigma_values[1:number_of_peaks + 1][:]], fmt="o", color = 'darkred')
+    plt.axhline(y=statistics.mean([s[0] for s in sigma_values[1:number_of_peaks + 1][:]]), color='dodgerblue', linestyle='--', label=f"Mean: {statistics.mean([s[0] for s in sigma_values[1:number_of_peaks + 1][:]]):.2f} ± {np.sqrt(statistics.mean([s[1]**2 for s in sigma_values[1:number_of_peaks + 1][:]]))/len(sigma_values[1:number_of_peaks + 1][:]):.2f}")
+    plt.fill_between(np.arange(len(sigma_values[1:number_of_peaks + 1][:])), statistics.mean([s[0] for s in sigma_values[1:number_of_peaks + 1][:]]) - np.sqrt(statistics.mean([s[1]**2 for s in sigma_values[1:number_of_peaks + 1][:]]))/len(sigma_values[1:number_of_peaks + 1][:]), statistics.mean([s[0] for s in sigma_values[1:number_of_peaks + 1][:]]) + np.sqrt(statistics.mean([s[1]**2 for s in sigma_values[1:number_of_peaks + 1][:]]))/len(sigma_values[1:number_of_peaks + 1][:]), alpha=0.5, color='dodgerblue')
+    plt.xlabel("Peak Number")
+    plt.ylabel("Sigma of Gaussian Fit (ADC)")
+    plt.title("Sigma of Gaussian Fit for " + str(v) + " V")
+    plt.tight_layout()
+    plt.savefig(path_name + data_directory_name + str(v) + "V/" + "sigma_values.png")
+
+    # Getting the mean sigma value for the fixed voltage and saving it in a list for each voltage
+    sigma_vs_voltage.append([statistics.mean([s[0] for s in sigma_values[1:number_of_peaks + 1][:]]), np.sqrt(statistics.mean([s[1]**2 for s in sigma_values[1:number_of_peaks + 1][:]]))/len(sigma_values[1:number_of_peaks + 1][:])])
+
+    distance_between_peaks = []  # Clear the list for the next voltage
+
+# Fitting distance between peaks vs voltage with a linear function and plotting it
+voltage_array = np.array(voltage)
+distance_array = np.array([d[0] for d in distance_vs_voltage])
+distance_error_array = np.array([d[1] for d in distance_vs_voltage])
+
+popt, perr = hp.linear_fit(voltage_array, distance_array, distance_error_array)
+a, b = popt
+a_err, b_err = perr
+
+# Plotting distance between peaks vs voltage
+plt.figure(figsize=(8, 6))
+plt.errorbar(voltage, [d[0] for d in distance_vs_voltage], yerr=[d[1] for d in distance_vs_voltage], fmt="o")
+plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt), label=f"Fit: y = {a:.2f} ± {a_err:.2f} * x + {b:.2f} ± {b_err:.2f}", color='red')
+plt.xlabel("Voltage (V)")
+plt.ylabel("Mean Distance between Peaks (ADC)")
+plt.title("Mean Distance between Peaks vs Voltage")
+plt.legend()
+plt.tight_layout()
+plt.savefig(os.path.join(results_dir, "distance_vs_voltage.png"))
+
+# Lineare fit of the distance between the first peak and the pedestal vs voltage
+voltage_array = np.array(voltage)
+distance_first_peak_and_pedestal_array = np.array([d[0] for d in distance_first_peak_and_pedestal])
+distance_first_peak_and_pedestal_error_array = np.array([d[1] for d in distance_first_peak_and_pedestal])
+popt, perr = hp.linear_fit(voltage_array, distance_first_peak_and_pedestal_array, distance_first_peak_and_pedestal_error_array)
+a, b = popt
+a_err, b_err = perr
+
+# Plotting distance between the first peak and the pedestal for the fixed voltage
+plt.figure(figsize=(8, 6))
+plt.errorbar(voltage, [d[0] for d in distance_first_peak_and_pedestal], yerr=[d[1] for d in distance_first_peak_and_pedestal], fmt="o", color = 'darkblue')
+plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt), label=f"Fit: y = {a:.2f} ± {a_err:.2f} * x + {b:.2f} ± {b_err:.2f}", color='red')
+plt.xlabel("Voltage (V)")
+plt.ylabel("Distance between First Peak and Pedestal (ADC)")
+plt.title("Distance between First Peak and Pedestal vs Voltage")
+plt.legend()
+plt.tight_layout()
+plt.savefig(os.path.join(results_dir, "distance_first_peak_and_pedestal.png"))
+
+# Plotting sigma of Gaussian fit vs voltage
+voltage_array = np.array(voltage)
+sigma_array = np.array([s[0] for s in sigma_vs_voltage])
+sigma_error_array = np.array([s[1] for s in sigma_vs_voltage])
+popt, perr = hp.linear_fit(voltage_array, sigma_array, sigma_error_array)
+a, b = popt
+a_err, b_err = perr
+
+# Plotting sigma of Gaussian fit vs voltage
+plt.figure(figsize=(8, 6))
+plt.errorbar(voltage, [s[0] for s in sigma_vs_voltage], yerr=[s[1] for s in sigma_vs_voltage], fmt="o", color = 'darkred')
+plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt), label=f"Fit: y = {a:.2f} ± {a_err:.2f} * x + {b:.2f} ± {b_err:.2f}", color='blue')
+plt.xlabel("Voltage (V)")
+plt.ylabel("Mean Sigma of Gaussian Fit (ADC)")
+plt.title("Mean Sigma of Gaussian Fit vs Voltage")
+plt.legend()
+plt.tight_layout()
+plt.savefig(os.path.join(results_dir, "sigma_vs_voltage.png"))
 plt.show()
