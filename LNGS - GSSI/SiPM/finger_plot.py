@@ -62,6 +62,11 @@ distance_first_peak_and_pedestal = []
 
 sigma_vs_voltage = []
 
+first_peak_position = []
+pedestal_position = []
+second_peak_position = []
+third_peak_position = []
+
 for v in voltage:
 
     # Gaussian fit parameters
@@ -178,6 +183,12 @@ for v in voltage:
 
     distance_between_peaks = []  # Clear the list for the next voltage
 
+    # Getting the position of the first peak and the pedestal
+    first_peak_position.append([mean_values[1][0], mean_values[1][1]])
+    pedestal_position.append([mean_values[0][0], mean_values[0][1]])
+    second_peak_position.append([mean_values[2][0], mean_values[2][1]])
+    third_peak_position.append([mean_values[3][0], mean_values[3][1]])
+
 # Fitting distance between peaks vs voltage with a linear function and plotting it
 voltage_array = np.array(voltage)
 distance_array = np.array([d[0] for d in distance_vs_voltage])
@@ -235,4 +246,67 @@ plt.title("Mean Sigma of Gaussian Fit vs Voltage")
 plt.legend()
 plt.tight_layout()
 plt.savefig(os.path.join(results_dir, "sigma_vs_voltage.png"))
+
+# Linear fitting the position of the first peak and second one
+voltage_array = np.array(voltage)
+first_peak_position_array = np.array([p[0] for p in first_peak_position])
+first_peak_position_error_array = np.array([p[1] for p in first_peak_position])
+second_peak_position_array = np.array([p[0] for p in second_peak_position])
+second_peak_position_error_array = np.array([p[1] for p in second_peak_position])
+popt, perr = hp.linear_fit(voltage_array, first_peak_position_array, first_peak_position_error_array)
+a, b = popt
+a_err, b_err = perr
+popt_second, perr_second = hp.linear_fit(voltage_array, second_peak_position_array, second_peak_position_error_array)
+a_second, b_second = popt_second
+a_second_err, b_second_err = perr_second
+
+# Fitting the third peak
+third_peak_position_array = np.array([p[0] for p in third_peak_position])
+third_peak_position_error_array = np.array([p[1] for p in third_peak_position])
+popt_third, perr_third = hp.linear_fit(voltage_array, third_peak_position_array, third_peak_position_error_array)
+a_third, b_third = popt_third
+a_third_err, b_third_err = perr_third
+
+# Linear fit of pedestal
+voltage_array = np.array(voltage)
+pedestal_position_array = np.array([p[0] for p in pedestal_position])
+pedestal_position_error_array = np.array([p[1] for p in pedestal_position])
+popt_pedestal, perr_pedestal = hp.linear_fit(voltage_array, pedestal_position_array, pedestal_position_error_array)
+a_pedestal, b_pedestal = popt_pedestal
+a_pedestal_err, b_pedestal_err = perr_pedestal
+
+# Plotting the position of the first peak and the pedestal vs voltage
+plt.figure(figsize=(8, 6))
+plt.errorbar(voltage, [p[0] for p in first_peak_position], yerr=[p[1] for p in first_peak_position], fmt="o", label="First Peak", color='green')
+plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt), label=f"Fit: y = {a:.2f} ± {a_err:.2f} * x + {b:.2f} ± {b_err:.2f}", color='blue')
+plt.errorbar(voltage, [p[0] for p in pedestal_position], yerr=[p[1] for p in pedestal_position], fmt="o", label="Pedestal", color='orange')
+plt.errorbar(voltage, [p[0] for p in second_peak_position], yerr=[p[1] for p in second_peak_position], fmt="o", label="Second Peak", color='red')
+plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt_second), label=f"Fit: y = {a_second:.2f} ± {a_second_err:.2f} * x + {b_second:.2f} ± {b_second_err:.2f}", color='magenta')
+plt.errorbar(voltage, [p[0] for p in pedestal_position], yerr=[p[1] for p in pedestal_position], fmt="o", label="Pedestal", color='orange')
+plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt_pedestal), label=f"Fit: y = {a_pedestal:.2f} ± {a_pedestal_err:.2f} * x + {b_pedestal:.2f} ± {b_pedestal_err:.2f}", color='cyan')
+plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt_third), label=f"Fit: y = {a_third:.2f} ± {a_third_err:.2f} * x + {b_third:.2f} ± {b_third_err:.2f}", color='purple')
+plt.errorbar(voltage, [p[0] for p in third_peak_position], yerr=[p[1] for p in third_peak_position], fmt="o", label="Third Peak", color='purple')
+plt.xlabel("Voltage (V)")
+plt.ylabel("Position (ADC)")
+plt.title("Position of First Peak and Pedestal vs Voltage")
+plt.legend()
+plt.tight_layout()
+plt.savefig(os.path.join(results_dir, "first_peak_and_pedestal_position.png"))
+
+# Plotting the position of the first, second and third peak removing the pedestal position
+plt.figure(figsize=(8, 6))
+plt.errorbar(voltage, [p[0]- b_pedestal for p in first_peak_position], yerr=[p[1] for p in first_peak_position], fmt="o", label="First Peak", color='green')
+plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt) - b_pedestal, label=f"Fit: y = {a:.2f} ± {a_err:.2f} * x + {b + b_pedestal:.2f} ± {b_err:.2f}", color='blue')
+plt.errorbar(voltage, [p[0]- b_pedestal for p in second_peak_position], yerr=[p[1] for p in second_peak_position], fmt="o", label="Second Peak", color='red')
+plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt_second) - b_pedestal, label=f"Fit: y = {a_second:.2f} ± {a_second_err:.2f} * x + {b_second + b_pedestal:.2f} ± {b_second_err:.2f}", color='magenta')
+plt.errorbar(voltage, [p[0]- b_pedestal for p in third_peak_position], yerr=[p[1] for p in third_peak_position], fmt="o", label="Third Peak", color='purple')
+plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt_third) - b_pedestal, label=f"Fit: y = {a_third:.2f} ± {a_third_err:.2f} * x + {b_third + b_pedestal:.2f} ± {b_third_err:.2f}", color='purple')
+plt.xlabel("Voltage (V)")
+plt.ylabel("Position (ADC)")
+plt.title("Position of First Peak and Pedestal vs Voltage")
+plt.legend()
+plt.tight_layout()
+plt.savefig(os.path.join(results_dir, "first_peak_and_pedestal_position.png"))
+
+
 plt.show()
