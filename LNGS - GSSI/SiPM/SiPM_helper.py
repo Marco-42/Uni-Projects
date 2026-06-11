@@ -10,7 +10,12 @@ import matplotlib.pyplot as plt
 from cycler import cycler
 import mplhep as hep
 from scipy.optimize import curve_fit
-
+from scipy.signal import convolve
+from scipy.stats import landau
+try:
+	from . import langau
+except ImportError:
+	import langau
 
 # Graph style
 # Setting plot style
@@ -55,7 +60,17 @@ class SiPM:
         self.layer = CODE_str.split("_")[2]
         self.channel = CODE_str.split("_")[3]
         self.SiPM_number = CODE_str.split("_")[4]
-     
+
+# Class to represent the points of a finger plot
+class FingerPlotPoint:
+    def __init__(self, peaks, peaks_error, bg_idx, bg_values, bg_error, voltage):
+        self.peaks = peaks
+        self.peaks_error = peaks_error
+        self.bg_idx = bg_idx
+        self.bg_values = bg_values
+        self.bg_error = bg_error
+        self.voltage = voltage
+
 # ==============================================
 #           DATA EXTRACTION FUNCTIONS
 # ==============================================
@@ -337,6 +352,12 @@ def gauss_fit(x, y, sy, p0=None):
         )
     return popt, np.sqrt(np.diag(pcov))
 
+# Integrating over a region
+def integration_without_bg(x, y, bg_values, x_min, x_max):
+    """Integrate the function defined by (x, y) over the region [x_min, x_max]."""
+    mask = (x >= x_min) & (x <= x_max)
+    return np.trapz(y[mask] - bg_values[mask], x[mask])
+
 # ==============================================
 #             FINGER PLOT ANALYSIS
 # ==============================================
@@ -384,3 +405,71 @@ def linear_fit(x, y, sy):
             maxfev=20000,
         )
     return popt, np.sqrt(np.diag(pcov))
+
+# ==============================================
+#         BACKGROUND POINTS EXTRACTION
+# ==============================================
+
+# Function to extract the background points
+def extract_bg(x, y, x_min, x_max, use_scipy=True, prominence=1, distance=None):
+    """
+    Extract the background points from the data (x, y) by selecting the points
+    that are not peaks (i.e., those with indices not in `peaks_idx`).
+    """
+
+    # Transorming the lowest point of the fingerplot(bg points) to new peaks
+    # Getting only x and y values with x between x_min and x_max
+    mask = (x >= x_min) & (x <= x_max)
+    x_mask = x[mask]
+    y_mask = y[mask]
+    
+    # Searching for bg peaks
+    peaks_idx, peaks_values = find_peaks(-y_mask, use_scipy=use_scipy, prominence = prominence, distance=distance)
+
+    # Return normalized values
+    peaks_values = -peaks_values
+    peaks_idx = peaks_idx + np.where(mask)[0][0]
+
+    return peaks_idx, peaks_values
+
+# Model function for the background points: Landau distribution convolved with a Gaussian component
+def background_model(xdata, landau_mean, landau_width, gauss_width, langau_amplitude):
+    
+    return langau_amplitude * langau.pdf(xdata, landau_x_mpv=landau_mean, landau_xi=landau_width, gauss_sigma=gauss_width)
+    
+# Fitting function for the background points
+def bg_fitting(x, y, y_err, landau_mean, landau_width, gauss_width, langau_amplitude):
+    """Fit the background points with a Landau plus Gaussian distribution."""
+
+    popt, pcov = curve_fit(
+        background_model,
+        x,
+        y,
+        p0=(landau_mean, landau_width, gauss_width, langau_amplitude),
+        sigma=y_err,
+        maxfev=10000,
+    )
+
+    return popt, np.sqrt(np.diag(pcov))
+
+# ==============================================
+#          POISSON FITTING OF PEAKS
+# =============================================
+
+# Making a poisson fit with a discrate offset on x values
+def poisson_fit(integrated_values):
+    x_no_offset = np.arange(len(integrated_values))
+
+
+    def poisson_model(k, lam, b):
+        x = x_no_offset - b
+        return lam**k * np.exp(-lam) / np.math.factorial(k)
+    
+    popt, pcov = curve_fit(
+        poisson_model,
+        x_no_offset,
+        integrated_values,
+        p0=(np.mean(integrated_values), 0),
+        maxfev=10000,
+    )
+    return popt[0], popt[1], np.sqrt(np.diag(pcov))
