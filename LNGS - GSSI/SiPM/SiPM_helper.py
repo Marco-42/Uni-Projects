@@ -131,7 +131,7 @@ def get_column_number(DAQ, gain_type, CITIROC, channel):
     if DAQ == 1:
       column_number += 0
     elif DAQ == 2:
-      column_number += 128
+      column_number += 256
     
     if gain_type == "LG":
         column_number += 0

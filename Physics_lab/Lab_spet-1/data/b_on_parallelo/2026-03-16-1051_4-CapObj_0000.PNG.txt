@@ -1,0 +1,20 @@
+[ZWO ASI294MM Pro]
+Auto Exp Max Exp = 30000ms
+Auto Exp Max Gain = 285
+Auto Exp Target Brightness = 100
+Bin = 1
+Brightness = 8
+Capture Area Size = 8288 * 5644
+Colour Format = RAW8
+Debayer Type = NONE
+Exposure = 180s
+Flip = None
+Gain = 50
+Hardware Bin = OFF
+High Speed Mode = OFF
+StartX = 0
+StartY = 0
+Temperature = 9.8 C
+Timestamp Frames = OFF
+USB Limit = 80
+USB Port = 3.0

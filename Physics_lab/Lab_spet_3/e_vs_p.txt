@@ -1,0 +1,6 @@
+# pressioni - energia - incertezza energia - vmax - incertezza vmax
+650 6612 58 230 3
+600 6562 70 218 3
+550 6554 59 205 3
+500 6598 67 197 3
+450 6546 76 182 5

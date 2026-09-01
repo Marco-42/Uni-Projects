@@ -1,0 +1,44 @@
+BIAS 40.0 V - HG 33
+
+Pedestal fit results:
+LYSO: mean = 2056.98 +- 0.05, sigma = 10.44
+Cobalt: mean = 2056.51 +- 0.02, sigma = 8.21
+Cesium: mean = 2059.70 +- 0.12, sigma = 16.01
+Sodium: mean = 2061.19 +- 0.12, sigma = 18.61
+
+Fitted peak positions (in ADC) +- sigma:
+LYSO1: 492.78 +- 104.94
+LYSO2: 785.29 +- 110.95
+LYSO3: 1213.16 +- 195.99
+Sodium1: 1103.59 +- 120.64
+Sodium2: 2789.34 +- 286.35
+Cesium1: 1551.01 +- 154.33
+Cobalt1: 3015.05 +- 267.47
+Cobalt2: 3517.69 +- 226.28
+
+Linear fit data
+Slope = 0.3454 ± 0.0026 KeV/ADC
+Q = 123.9544 ± 3.7268 KeV
+
+Fitted peak positions in KeV after the convertion
+Peak_position_mean +- err_on_mean, sigma +- err_on_sigma:
+
+LYSO1: 294.16 +- 1.35, 36.25 +- 1.43
+LYSO2: 395.19 +- 1.21, 38.32 +- 0.96
+LYSO3: 542.97 +- 5.05, 67.69 +- 3.05
+Sodium1: 505.13 +- 1.53, 41.67 +- 1.86
+Cesium1: 659.66 +- 2.62, 53.31 +- 3.27
+Cobalt1: 1165.33 +- 15.37, 92.38 +- 13.18
+Cobalt2: 1338.94 +- 21.86, 78.15 +- 10.00
+
+MEAN - ERROR ON MEAN - SIGMA - ERROR ON SIGMA
+294.16 1.35 36.25 1.43
+395.19 1.21 38.32 0.96
+542.97 5.05 67.69 3.05
+505.13 1.53 41.67 1.86
+659.66 2.62 53.31 3.27
+1165.33 15.37 92.38 13.18
+1338.94 21.86 78.15 10.00
+
+
+

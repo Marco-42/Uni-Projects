@@ -51,7 +51,7 @@ fitting_points = [20, 10, 10, 10, 10, 6, 6]
 langau_widths = [400, 400, 700, 1000, 1000, 1200, 1400]
 number_of_peaks = 8
 
-CODE = "5_3_2_1_1" 
+CODE = "5_3_2_2_1" 
 data_directory_name = "PST_" + CODE + "_HV_"
 path_name = "./data/"
 
@@ -79,7 +79,7 @@ for v in voltage:
     SiPM_ID = hp.SiPM(CODE)
     # Extracting the column number
     # DAQ - gain type - CITORC - Channel number
-    column_number = hp.get_column_number(1, "HG", "C", 5)
+    column_number = hp.get_column_number(1, "HG", "C", 4)
     
     # Extracting the data from the CSV file
     ADC, counts = hp.extract_SiPM_data(path_name + data_directory_name + str(v) + "V/" + "data.csv", column_number, False)
@@ -122,7 +122,7 @@ for v in voltage:
     for i in range(1, min(number_of_peaks+1, len(peaks_indices))):
         x_fit = ADC[peaks_indices[i]-fitting_points[voltage.index(v)]:peaks_indices[i]+fitting_points[voltage.index(v)]]
         y_fit = hp.gauss_function(x_fit, A_values[i][0], mean_values[i][0], sigma_values[i][0])
-        plt.plot(x_fit, y_fit, label=f"$\mu$: {mean_values[i][0]:.0f} ± {mean_values[i][1]:.0f}", lw = 2)
+        plt.plot(x_fit, y_fit, label=f"$\mu$: {mean_values[i][0]:.1f} ± {mean_values[i][1]:.1f}", lw = 2)
     plt.xlabel("ADC")
     plt.ylabel("Counts")
     plt.title("Finger Plot for " + str(v) + " V")
@@ -175,6 +175,7 @@ for v in voltage:
     plt.ylabel("Distance between Peaks (ADC)")
     plt.title("Distance between peaks for " + str(v) + " V")
     plt.tight_layout()
+    plt.legend(loc = 'best')
     plt.savefig(path_name + data_directory_name + str(v) + "V/" + "distance_between_peaks.png")
 
     # Plotting the same thing but for gaussian sigma
@@ -247,6 +248,7 @@ for v in voltage:
     results_dir = "./results"
     os.makedirs(results_dir, exist_ok=True)
     result_file = os.path.join(results_dir, f"{CODE}_{v}.txt")
+    result_file_peaks_count = os.path.join(results_dir, f"{CODE}_{v}_peaks_count.txt")
     if os.path.exists(result_file):
         os.remove(result_file)
 
@@ -257,9 +259,10 @@ for v in voltage:
         print(integrated_peaks[-1])
         with open(result_file, "a") as f:
             f.write(f"{integrated_peaks[-1]}\n")
-
-
-
+    
+    with open(result_file_peaks_count, "a") as f:
+        for pi in peaks_indices[1:number_of_peaks + 1][:]:
+            f.write(f"{counts[pi]} {counts[pi] - hp.background_model(ADC[pi], *bg_popt)}\n")
 
 # Fitting distance between peaks vs voltage with a linear function and plotting it
 voltage_array = np.array(voltage)
@@ -273,11 +276,11 @@ a_err, b_err = perr
 # Plotting distance between peaks vs voltage
 plt.figure(figsize=(8, 6))
 plt.errorbar(voltage, [d[0] for d in distance_vs_voltage], yerr=[d[1] for d in distance_vs_voltage], fmt="o")
-plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt), label=f"Fit: y = {a:.2f} ± {a_err:.2f} * x + {b:.2f} ± {b_err:.2f}", color='red')
+plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt), label=f"Fit: y = {a:.2f} ± {a_err:.2f} * x + {b:.0f} ± {b_err:.0f}", color='red')
 plt.xlabel("Voltage (V)")
 plt.ylabel("Mean Distance between Peaks (ADC)")
 plt.title("Mean Distance between Peaks vs Voltage")
-plt.legend()
+plt.legend(loc = 'upper left')
 plt.tight_layout()
 plt.savefig(os.path.join(results_dir, "distance_vs_voltage.png"))
 
@@ -356,39 +359,38 @@ a_pedestal_err, b_pedestal_err = perr_pedestal
 # Plotting the position of the first peak and the pedestal vs voltage
 plt.figure(figsize=(8, 6))
 plt.errorbar(voltage, [p[0] for p in first_peak_position], yerr=[p[1] for p in first_peak_position], fmt="o", label="First Peak", color='green')
-plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt), label=f"Fit: y = {a:.2f} ± {a_err:.2f} * x + {b:.2f} ± {b_err:.2f}", color='blue')
+plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt), label=f"Fit: y = {a:.1f} ± {a_err:.1f} * x + {b:.0f} ± {b_err:.0f}", color='blue')
 plt.errorbar(voltage, [p[0] for p in pedestal_position], yerr=[p[1] for p in pedestal_position], fmt="o", label="Pedestal", color='orange')
 plt.errorbar(voltage, [p[0] for p in second_peak_position], yerr=[p[1] for p in second_peak_position], fmt="o", label="Second Peak", color='red')
-plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt_second), label=f"Fit: y = {a_second:.2f} ± {a_second_err:.2f} * x + {b_second:.2f} ± {b_second_err:.2f}", color='magenta')
-plt.errorbar(voltage, [p[0] for p in pedestal_position], yerr=[p[1] for p in pedestal_position], fmt="o", label="Pedestal", color='orange')
-plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt_pedestal), label=f"Fit: y = {a_pedestal:.2f} ± {a_pedestal_err:.2f} * x + {b_pedestal:.2f} ± {b_pedestal_err:.2f}", color='cyan')
-plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt_third), label=f"Fit: y = {a_third:.2f} ± {a_third_err:.2f} * x + {b_third:.2f} ± {b_third_err:.2f}", color='purple')
+plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt_second), label=f"Fit: y = {a_second:.2f} ± {a_second_err:.2f} * x + {b_second:.0f} ± {b_second_err:.0f}", color='magenta')
+plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt_pedestal), label=f"Fit: y = {a_pedestal:.2f} ± {a_pedestal_err:.2f} * x + {b_pedestal:.0f} ± {b_pedestal_err:.0f}", color='cyan')
+plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt_third), label=f"Fit: y = {a_third:.2f} ± {a_third_err:.2f} * x + {b_third:.0f} ± {b_third_err:.0f}", color='purple')
 plt.errorbar(voltage, [p[0] for p in third_peak_position], yerr=[p[1] for p in third_peak_position], fmt="o", label="Third Peak", color='purple')
 plt.errorbar(voltage, [p[0] for p in fourth_peak_position], yerr=[p[1] for p in fourth_peak_position], fmt="o", label="Fourth Peak", color='brown')
-plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt_fourth), label=f"Fit: y = {a_fourth:.2f} ± {a_fourth_err:.2f} * x + {b_fourth:.2f} ± {b_fourth_err:.2f}", color='brown')
+plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt_fourth), label=f"Fit: y = {a_fourth:.2f} ± {a_fourth_err:.2f} * x + {b_fourth:.0f} ± {b_fourth_err:.0f}", color='brown')
 plt.xlabel("Voltage (V)")
 plt.ylabel("Position (ADC)")
-plt.title("Position of First Peak and Pedestal vs Voltage")
-plt.legend()
+plt.title("Peaks position and Pedestal vs Voltage")
+plt.legend(loc = 'upper left')
 plt.tight_layout()
 plt.savefig(os.path.join(results_dir, "first_peak_and_pedestal_position.png"))
 
 # Plotting the position of the first, second and third peak removing the pedestal position
 plt.figure(figsize=(8, 6))
 plt.errorbar(voltage, [p[0]- b_pedestal for p in first_peak_position], yerr=[p[1] for p in first_peak_position], fmt="o", label="First Peak", color='green')
-plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt) - b_pedestal, label=f"Fit: y = {a:.2f} ± {a_err:.2f} * x + {b + b_pedestal:.2f} ± {b_err:.2f}", color='blue')
+plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt) - b_pedestal, label=f"Fit: y = {a:.1f} ± {a_err:.1f} * x + {b + b_pedestal:.0f} ± {b_err:.0f}", color='blue')
 plt.errorbar(voltage, [p[0]- b_pedestal for p in second_peak_position], yerr=[p[1] for p in second_peak_position], fmt="o", label="Second Peak", color='red')
-plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt_second) - b_pedestal, label=f"Fit: y = {a_second:.2f} ± {a_second_err:.2f} * x + {b_second + b_pedestal:.2f} ± {b_second_err:.2f}", color='magenta')
+plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt_second) - b_pedestal, label=f"Fit: y = {a_second:.2f} ± {a_second_err:.2f} * x + {b_second + b_pedestal:.0f} ± {b_second_err:.0f}", color='magenta')
 plt.errorbar(voltage, [p[0]- b_pedestal for p in third_peak_position], yerr=[p[1] for p in third_peak_position], fmt="o", label="Third Peak", color='purple')
-plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt_third) - b_pedestal, label=f"Fit: y = {a_third:.2f} ± {a_third_err:.2f} * x + {b_third + b_pedestal:.2f} ± {b_third_err:.2f}", color='purple')
-plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt_fourth) - b_pedestal, label=f"Fit: y = {a_fourth:.2f} ± {a_fourth_err:.2f} * x + {b_fourth + b_pedestal:.2f} ± {b_fourth_err:.2f}", color='brown')
+plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt_third) - b_pedestal, label=f"Fit: y = {a_third:.2f} ± {a_third_err:.2f} * x + {b_third + b_pedestal:.0f} ± {b_third_err:.0f}", color='purple')
+plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt_fourth) - b_pedestal, label=f"Fit: y = {a_fourth:.2f} ± {a_fourth_err:.2f} * x + {b_fourth + b_pedestal:.0f} ± {b_fourth_err:.0f}", color='brown')
 plt.errorbar(voltage, [p[0]- b_pedestal for p in fourth_peak_position], yerr=[p[1] for p in fourth_peak_position], fmt="o", label="Fourth Peak", color='brown')
 plt.xlabel("Voltage (V)")
 plt.ylabel("Position (ADC)")
 plt.title("Position of First Peak and Pedestal vs Voltage")
 plt.legend()
 plt.tight_layout()
-plt.savefig(os.path.join(results_dir, "first_peak_and_pedestal_position.png"))
+plt.savefig(os.path.join(results_dir, "first_peak_no_pedestal_position.png"))
 
 # Computing the ratio between the third and second peaks position and between the fourth and the second ones
 ratio_3_2 = []
@@ -412,10 +414,10 @@ a_second_err, b_second_err = perr_second
 
 # Plotting the two ratios
 plt.figure(figsize=(8, 6))
-plt.plot(voltage, [r[0] for r in ratio_3_2], "o", label="Third Peak / Second Peak", color='darkorange')
-plt.plot(voltage, [r[0] for r in ratio_4_2], "o", label="Fourth Peak / Second Peak", color='darkblue')
-plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt), label=f"Fit: y = {a:.2f} ± {a_err:.2f} * x + {b:.2f} ± {b_err:.2f}", color='darkorange')
-plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt_second), label=f"Fit: y = {a_second:.2f} ± {a_second_err:.2f} * x + {b_second:.2f} ± {b_second_err:.2f}", color='darkblue')
+plt.errorbar(voltage, [r[0] for r in ratio_3_2], yerr=[r[1] for r in ratio_3_2], fmt="o", label="Third Peak / Second Peak", color='darkorange')
+plt.errorbar(voltage, [r[0] for r in ratio_4_2], yerr=[r[1] for r in ratio_4_2], fmt="o", label="Fourth Peak / Second Peak", color='darkblue')
+plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt), label=f"Fit: y = {a:.3f} ± {a_err:.3f} * x + {b:.3f} ± {b_err:.3f}", color='darkorange')
+plt.plot(np.linspace(min(voltage), max(voltage), 100), hp.linear_func(np.linspace(min(voltage), max(voltage), 100), *popt_second), label=f"Fit: y = {a_second:.3f} ± {a_second_err:.3f} * x + {b_second:.3f} ± {b_second_err:.3f}", color='darkblue')
 plt.xlabel("Voltage (V)")
 plt.ylabel("Ratio")
 plt.title("Ratios between peak positions")

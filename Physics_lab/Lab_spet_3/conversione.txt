@@ -1,0 +1,4 @@
+# energia vera - incertezza energia vera - energia nostra - incertezza energia nostra
+4788 0.9 5777.3 43
+5485.56 0.12 6602.5 63
+5804.77 0.05 6995.8 49
