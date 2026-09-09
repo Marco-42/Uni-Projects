@@ -1,0 +1,15 @@
+{
+    "analyzed file": "data/neutrons/vcasn1/RAW_run__6__15_02_30",
+    "bias": 90,
+    "acq_mode": "normal",
+    "mask_noisy": false,
+    "acq_time": 1199.9952624,
+    "delta_t": null,
+    "tot_hit": 1748671.0,
+    "VCASN": 1,
+    "ID": 0,
+    "IBIAS": 2,
+    "IFB": 2,
+    "hit_rate": 1457.2315864836369,
+    "err_hit_rate": 1.1019820550779753
+}
