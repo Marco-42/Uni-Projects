@@ -1,0 +1,754 @@
+ANALYSIS RESULT 
+
+----------------------------------------------------------
+TARGET MATERIAL: Si02(10 um) + Silicon
+----------------------------------------------------------
+
+ION TYPE: Boron 		 ANGLE: 0 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 10001
+
+Mean X (mu): 184.1304 um
+Standard deviation X (sigma): 0.9571 um
+
+Mean Y (mu): -0.0037 um
+Standard deviation Y (sigma): 2.4663 um
+
+Mean Z (mu): -0.0115 um
+Standard deviation Z (sigma): 2.4449 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Boron (computed between 14.7 - 23.1): 1.1875 MeV*cm^2/mg
+Standard deviation LET Ions in Boron (first 20 micron): 0.0117 MeV*cm^2/mg
+Total energy deposited in SiO2: 1.8 MeV
+Total energy deposited in Si: 77.2 MeV
+Total energy deposited: 79.0 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Boron 		 ANGLE: 30 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 10000
+
+Mean X (mu): 159.3550 um
+Standard deviation X (sigma): 1.4618 um
+
+Mean Y (mu): 92.0296 um
+Standard deviation Y (sigma): 2.1083 um
+
+Mean Z (mu): -0.0431 um
+Standard deviation Z (sigma): 2.4259 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Boron (computed between 17.0 - 26.7): 1.1980 MeV*cm^2/mg
+Standard deviation LET Ions in Boron (first 20 micron): 0.0132 MeV*cm^2/mg
+Total energy deposited in SiO2: 2.1 MeV
+Total energy deposited in Si: 76.8 MeV
+Total energy deposited: 78.9 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Boron 		 ANGLE: 45 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 10000
+
+Mean X (mu): 129.9924 um
+Standard deviation X (sigma): 1.7850 um
+
+Mean Y (mu): 129.9804 um
+Standard deviation Y (sigma): 1.7989 um
+
+Mean Z (mu): -0.0221 um
+Standard deviation Z (sigma): 2.3792 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Boron (computed between 29.0 - 52.2): 1.2670 MeV*cm^2/mg
+Standard deviation LET Ions in Boron (first 20 micron): 0.0388 MeV*cm^2/mg
+Total energy deposited in SiO2: 1.7 MeV
+Total energy deposited in Si: 75.8 MeV
+Total energy deposited: 77.5 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Boron 		 ANGLE: 60 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 10000
+
+Mean X (mu): 91.6786 um
+Standard deviation X (sigma): 2.3530 um
+
+Mean Y (mu): 158.8174 um
+Standard deviation Y (sigma): 1.5510 um
+
+Mean Z (mu): -0.0114 um
+Standard deviation Z (sigma): 2.3960 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Boron (computed between 41.0 - 73.8): **** eV/Å
+Standard deviation LET Ions in Boron (computed between 41.0 - 73.8): **** eV/Å
+Total energy deposited in SiO2: 2.4 MeV
+Total energy deposited in Si: 74.2 MeV
+Total energy deposited: 76.6 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Boron 		 ANGLE: 70 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 10000
+
+Mean X (mu): 62.4397 um
+Standard deviation X (sigma): 2.2710 um
+
+Mean Y (mu): 171.6773 um
+Standard deviation Y (sigma): 1.2734 um
+
+Mean Z (mu): 0.0069 um
+Standard deviation Z (sigma): 2.4528 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Boron (computed between 48.0 - 95.9): **** eV/Å
+Standard deviation LET Ions in Boron (computed between 48.0 - 95.9): **** eV/Å
+Total energy deposited in SiO2: 3.5 MeV
+Total energy deposited in Si: 70.5 MeV
+Total energy deposited: 74.1 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Boron 		 ANGLE: 80 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 9999
+
+Mean X (mu): 31.3758 um
+Standard deviation X (sigma): 2.2338 um
+
+Mean Y (mu): 177.9000 um
+Standard deviation Y (sigma): 1.0840 um
+
+Mean Z (mu): 0.0201 um
+Standard deviation Z (sigma): 2.2789 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Boron (computed between 70.8 - 165.3): **** eV/Å
+Standard deviation LET Ions in Boron (computed between 70.8 - 165.3): **** eV/Å
+Total energy deposited in SiO2: 7.2 MeV
+Total energy deposited in Si: 62.0 MeV
+Total energy deposited: 69.2 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Oxygen 		 ANGLE: 0 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 10000
+
+Mean X (mu): 105.9847 um
+Standard deviation X (sigma): 0.8297 um
+
+Mean Y (mu): -0.0231 um
+Standard deviation Y (sigma): 1.4252 um
+
+Mean Z (mu): -0.0025 um
+Standard deviation Z (sigma): 1.4287 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Oxygen (computed between 13.6 - 20.4): 3.1796 MeV*cm^2/mg
+Standard deviation LET Ions in Oxygen (first 20 micron): 0.0439 MeV*cm^2/mg
+Total energy deposited in SiO2: 5.1 MeV
+Total energy deposited in Si: 100.7 MeV
+Total energy deposited: 105.8 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Oxygen 		 ANGLE: 30 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 10000
+
+Mean X (mu): 91.6997 um
+Standard deviation X (sigma): 0.8436 um
+
+Mean Y (mu): 52.9475 um
+Standard deviation Y (sigma): 1.2294 um
+
+Mean Z (mu): 0.0190 um
+Standard deviation Z (sigma): 1.3668 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Oxygen (computed between 15.7 - 23.6): 3.2238 MeV*cm^2/mg
+Standard deviation LET Ions in Oxygen (first 20 micron): 0.0538 MeV*cm^2/mg
+Total energy deposited in SiO2: 5.9 MeV
+Total energy deposited in Si: 99.7 MeV
+Total energy deposited: 105.6 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Oxygen 		 ANGLE: 45 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 10000
+
+Mean X (mu): 74.7300 um
+Standard deviation X (sigma): 1.0480 um
+
+Mean Y (mu): 74.7631 um
+Standard deviation Y (sigma): 1.0074 um
+
+Mean Z (mu): 0.0008 um
+Standard deviation Z (sigma): 1.3537 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Oxygen (computed between 20.8 - 32.7): 3.3485 MeV*cm^2/mg
+Standard deviation LET Ions in Oxygen (first 20 micron): 0.0907 MeV*cm^2/mg
+Total energy deposited in SiO2: 6.7 MeV
+Total energy deposited in Si: 97.5 MeV
+Total energy deposited: 104.2 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Oxygen 		 ANGLE: 60 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 10000
+
+Mean X (mu): 52.6280 um
+Standard deviation X (sigma): 1.2316 um
+
+Mean Y (mu): 91.1811 um
+Standard deviation Y (sigma): 0.8535 um
+
+Mean Z (mu): 0.0231 um
+Standard deviation Z (sigma): 1.3961 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Oxygen (computed between 18.4 - 36.8): **** eV/Å
+Standard deviation LET Ions in Oxygen (computed between 18.4 - 36.8): **** eV/Å
+Total energy deposited in SiO2: 10.6 MeV
+Total energy deposited in Si: 91.7 MeV
+Total energy deposited: 102.3 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Oxygen 		 ANGLE: 70 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 10000
+
+Mean X (mu): 35.7916 um
+Standard deviation X (sigma): 1.3105 um
+
+Mean Y (mu): 98.3400 um
+Standard deviation Y (sigma): 0.7439 um
+
+Mean Z (mu): 0.0004 um
+Standard deviation Z (sigma): 1.3097 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Oxygen (computed between 26.9 - 53.8): **** eV/Å
+Standard deviation LET Ions in Oxygen (computed between 26.9 - 53.8): **** eV/Å
+Total energy deposited in SiO2: 15.8 MeV
+Total energy deposited in Si: 83.6 MeV
+Total energy deposited: 99.5 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Oxygen 		 ANGLE: 80 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 10000
+
+Mean X (mu): 17.8409 um
+Standard deviation X (sigma): 1.2266 um
+
+Mean Y (mu): 101.3132 um
+Standard deviation Y (sigma): 0.5693 um
+
+Mean Z (mu): -0.0068 um
+Standard deviation Z (sigma): 1.2314 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Oxygen (computed between 124.4 - 179.7): **** eV/Å
+Standard deviation LET Ions in Oxygen (computed between 124.4 - 179.7): **** eV/Å
+Total energy deposited in SiO2: 35.7 MeV
+Total energy deposited in Si: 52.0 MeV
+Total energy deposited: 87.6 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Silicon 		 ANGLE: 0 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 10000
+
+Mean X (mu): 60.6727 um
+Standard deviation X (sigma): 0.6415 um
+
+Mean Y (mu): 0.0047 um
+Standard deviation Y (sigma): 0.8095 um
+
+Mean Z (mu): -0.0043 um
+Standard deviation Z (sigma): 0.8715 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Silicon (computed between 13.2 - 18.0): 9.6281 MeV*cm^2/mg
+Standard deviation LET Ions in Silicon (first 20 micron): 0.1573 MeV*cm^2/mg
+Total energy deposited in SiO2: 18.5 MeV
+Total energy deposited in Si: 134.0 MeV
+Total energy deposited: 152.5 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Silicon 		 ANGLE: 30 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 10000
+
+Mean X (mu): 52.4682 um
+Standard deviation X (sigma): 0.5962 um
+
+Mean Y (mu): 30.2924 um
+Standard deviation Y (sigma): 0.7322 um
+
+Mean Z (mu): 0.0027 um
+Standard deviation Z (sigma): 0.8195 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Silicon (computed between 15.2 - 20.8): 9.8372 MeV*cm^2/mg
+Standard deviation LET Ions in Silicon (first 20 micron): 0.1944 MeV*cm^2/mg
+Total energy deposited in SiO2: 21.5 MeV
+Total energy deposited in Si: 130.4 MeV
+Total energy deposited: 151.9 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Silicon 		 ANGLE: 45 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 10000
+
+Mean X (mu): 42.7155 um
+Standard deviation X (sigma): 0.8327 um
+
+Mean Y (mu): 42.7243 um
+Standard deviation Y (sigma): 0.6559 um
+
+Mean Z (mu): 0.0065 um
+Standard deviation Z (sigma): 0.8227 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Silicon (computed between 18.7 - 25.5): 10.2239 MeV*cm^2/mg
+Standard deviation LET Ions in Silicon (first 20 micron): 0.2643 MeV*cm^2/mg
+Total energy deposited in SiO2: 26.6 MeV
+Total energy deposited in Si: 124.1 MeV
+Total energy deposited: 150.7 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Silicon 		 ANGLE: 60 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 10000
+
+Mean X (mu): 30.0266 um
+Standard deviation X (sigma): 0.7128 um
+
+Mean Y (mu): 52.0232 um
+Standard deviation Y (sigma): 0.5408 um
+
+Mean Z (mu): 0.0055 um
+Standard deviation Z (sigma): 0.8070 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Silicon (computed between 16.8 - 26.4): **** eV/Å
+Standard deviation LET Ions in Silicon (computed between 16.8 - 26.4): **** eV/Å
+Total energy deposited in SiO2: 38.4 MeV
+Total energy deposited in Si: 109.6 MeV
+Total energy deposited: 148.1 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Silicon 		 ANGLE: 70 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 9994
+
+Mean X (mu): 20.3625 um
+Standard deviation X (sigma): 0.7602 um
+
+Mean Y (mu): 55.9397 um
+Standard deviation Y (sigma): 0.4873 um
+
+Mean Z (mu): 0.0012 um
+Standard deviation Z (sigma): 0.7741 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Silicon (computed between 24.6 - 40.9): **** eV/Å
+Standard deviation LET Ions in Silicon (computed between 24.6 - 40.9): **** eV/Å
+Total energy deposited in SiO2: 58.7 MeV
+Total energy deposited in Si: 82.0 MeV
+Total energy deposited: 140.7 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Silicon 		 ANGLE: 80 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 9999
+
+Mean X (mu): 9.9635 um
+Standard deviation X (sigma): 0.6793 um
+
+Mean Y (mu): 56.5484 um
+Standard deviation Y (sigma): 0.3900 um
+
+Mean Z (mu): 0.0111 um
+Standard deviation Z (sigma): 0.6903 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Silicon (computed between 120.9 - 153.2): **** eV/Å
+Standard deviation LET Ions in Silicon (computed between 120.9 - 153.2): **** eV/Å
+Total energy deposited in SiO2: 135.1 MeV
+Total energy deposited in Si: 0.9 MeV
+Total energy deposited: 136.0 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Nickel 		 ANGLE: 0 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 10000
+
+Mean X (mu): 36.4174 um
+Standard deviation X (sigma): 0.6798 um
+
+Mean Y (mu): 0.0009 um
+Standard deviation Y (sigma): 0.9515 um
+
+Mean Z (mu): 0.0020 um
+Standard deviation Z (sigma): 0.9458 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Nickel (computed between 20.4 - 22.8): 29.2416 MeV*cm^2/mg
+Standard deviation LET Ions in Nickel (first 20 micron): 0.4658 MeV*cm^2/mg
+Total energy deposited in SiO2: 66.8 MeV
+Total energy deposited in Si: 144.2 MeV
+Total energy deposited: 211.1 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Nickel 		 ANGLE: 30 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 5000
+
+Mean X (mu): 31.4622 um
+Standard deviation X (sigma): 0.7591 um
+
+Mean Y (mu): 18.1577 um
+Standard deviation Y (sigma): 0.8996 um
+
+Mean Z (mu): 0.0185 um
+Standard deviation Z (sigma): 0.9479 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Nickel (computed between 23.6 - 26.3): 26.9869 MeV*cm^2/mg
+Standard deviation LET Ions in Nickel (first 20 micron): 0.9572 MeV*cm^2/mg
+Total energy deposited in SiO2: 77.5 MeV
+Total energy deposited in Si: 132.5 MeV
+Total energy deposited: 210.0 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Nickel 		 ANGLE: 45 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 4997
+
+Mean X (mu): 25.5595 um
+Standard deviation X (sigma): 0.8110 um
+
+Mean Y (mu): 25.5792 um
+Standard deviation Y (sigma): 0.8150 um
+
+Mean Z (mu): 0.0077 um
+Standard deviation Z (sigma): 0.9473 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Nickel (computed between 28.8 - 32.2): 15.5874 MeV*cm^2/mg
+Standard deviation LET Ions in Nickel (first 20 micron): 4.8239 MeV*cm^2/mg
+Total energy deposited in SiO2: 95.5 MeV
+Total energy deposited in Si: 112.7 MeV
+Total energy deposited: 208.2 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Nickel 		 ANGLE: 60 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 5000
+
+Mean X (mu): 17.8613 um
+Standard deviation X (sigma): 0.8783 um
+
+Mean Y (mu): 30.9324 um
+Standard deviation Y (sigma): 0.7065 um
+
+Mean Z (mu): -0.0130 um
+Standard deviation Z (sigma): 0.9381 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Nickel (computed between 41.6 - 48.0): **** eV/Å
+Standard deviation LET Ions in Nickel (computed between 41.6 - 48.0): **** eV/Å
+Total energy deposited in SiO2: 133.2 MeV
+Total energy deposited in Si: 66.9 MeV
+Total energy deposited: 200.1 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Nickel 		 ANGLE: 70 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 5000
+
+Mean X (mu): 11.8127 um
+Standard deviation X (sigma): 0.8161 um
+
+Mean Y (mu): 32.5179 um
+Standard deviation Y (sigma): 0.6329 um
+
+Mean Z (mu): -0.0048 um
+Standard deviation Z (sigma): 0.8498 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Nickel (computed between 49.1 - 58.5): **** eV/Å
+Standard deviation LET Ions in Nickel (computed between 49.1 - 58.5): **** eV/Å
+Total energy deposited in SiO2: 191.1 MeV
+Total energy deposited in Si: 7.8 MeV
+Total energy deposited: 198.8 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Nickel 		 ANGLE: 80 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 4997
+
+Mean X (mu): 6.0023 um
+Standard deviation X (sigma): 0.8178 um
+
+Mean Y (mu): 34.1357 um
+Standard deviation Y (sigma): 0.6442 um
+
+Mean Z (mu): 0.0237 um
+Standard deviation Z (sigma): 0.8363 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Nickel (computed between 69.1 - 87.5): **** eV/Å
+Standard deviation LET Ions in Nickel (computed between 69.1 - 87.5): **** eV/Å
+Total energy deposited in SiO2: 201.6 MeV
+Total energy deposited in Si: 0.0 MeV
+Total energy deposited: 201.6 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Silver 		 ANGLE: 0 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 5000
+
+Mean X (mu): 28.3020 um
+Standard deviation X (sigma): 0.6396 um
+
+Mean Y (mu): -0.0165 um
+Standard deviation Y (sigma): 0.8407 um
+
+Mean Z (mu): -0.0081 um
+Standard deviation Z (sigma): 0.8402 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Silver (computed between 20.4 - 22.6): 26.2332 MeV*cm^2/mg
+Standard deviation LET Ions in Silver (first 20 micron): 2.7455 MeV*cm^2/mg
+Total energy deposited in SiO2: 127.9 MeV
+Total energy deposited in Si: 122.3 MeV
+Total energy deposited: 250.3 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Silver 		 ANGLE: 30 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 5000
+
+Mean X (mu): 24.3918 um
+Standard deviation X (sigma): 0.6858 um
+
+Mean Y (mu): 14.0705 um
+Standard deviation Y (sigma): 0.7764 um
+
+Mean Z (mu): 0.0213 um
+Standard deviation Z (sigma): 0.8412 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Silver (computed between 23.7 - 26.0): 12.8721 MeV*cm^2/mg
+Standard deviation LET Ions in Silver (first 20 micron): 3.5880 MeV*cm^2/mg
+Total energy deposited in SiO2: 140.9 MeV
+Total energy deposited in Si: 108.6 MeV
+Total energy deposited: 249.5 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Silver 		 ANGLE: 45 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 5000
+
+Mean X (mu): 19.6797 um
+Standard deviation X (sigma): 0.7207 um
+
+Mean Y (mu): 19.6697 um
+Standard deviation Y (sigma): 0.7385 um
+
+Mean Z (mu): -0.0035 um
+Standard deviation Z (sigma): 0.8251 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Silver (computed between 29.0 - 31.8): 0.1689 MeV*cm^2/mg
+Standard deviation LET Ions in Silver (first 20 micron): 0.2922 MeV*cm^2/mg
+Total energy deposited in SiO2: 168.6 MeV
+Total energy deposited in Si: 79.1 MeV
+Total energy deposited: 247.7 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Silver 		 ANGLE: 60 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 5000
+
+Mean X (mu): 13.5053 um
+Standard deviation X (sigma): 0.7555 um
+
+Mean Y (mu): 23.3753 um
+Standard deviation Y (sigma): 0.6522 um
+
+Mean Z (mu): 0.0044 um
+Standard deviation Z (sigma): 0.7662 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Silver (computed between 36.0 - 40.8): **** eV/Å
+Standard deviation LET Ions in Silver (computed between 36.0 - 40.8): **** eV/Å
+Total energy deposited in SiO2: 220.3 MeV
+Total energy deposited in Si: 23.0 MeV
+Total energy deposited: 243.3 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Silver 		 ANGLE: 70 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 5000
+
+Mean X (mu): 9.2054 um
+Standard deviation X (sigma): 0.7166 um
+
+Mean Y (mu): 25.3017 um
+Standard deviation Y (sigma): 0.5906 um
+
+Mean Z (mu): -0.0074 um
+Standard deviation Z (sigma): 0.7401 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Silver (computed between 38.6 - 45.6): **** eV/Å
+Standard deviation LET Ions in Silver (computed between 38.6 - 45.6): **** eV/Å
+Total energy deposited in SiO2: 247.8 MeV
+Total energy deposited in Si: 0.1 MeV
+Total energy deposited: 247.9 MeV
+
+
+----------------------------------------------------------
+
+ION TYPE: Silver 		 ANGLE: 80 degrees
+
+RANGE ANALYSIS 
+
+Total ions simulated: 5000
+
+Mean X (mu): 4.6655 um
+Standard deviation X (sigma): 0.7336 um
+
+Mean Y (mu): 26.5151 um
+Standard deviation Y (sigma): 0.5931 um
+
+Mean Z (mu): 0.0098 um
+Standard deviation Z (sigma): 0.7343 um
+ION LET ANALYSIS 
+
+Mean LET Ions in Silver (computed between 51.8 - 65.6): **** eV/Å
+Standard deviation LET Ions in Silver (computed between 51.8 - 65.6): **** eV/Å
+Total energy deposited in SiO2: 236.2 MeV
+Total energy deposited in Si: 0.0 MeV
+Total energy deposited: 236.2 MeV
+
+
