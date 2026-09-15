@@ -1,0 +1,15 @@
+ 
+Total number of sampled neutrons: 10000000
+
+Total number of interacting elastic neutrons: 19418.44
+Percentage of interacting elastic neutrons: 0.19%
+
+Total number of interacting anelastic neutrons: 4657.04
+Percentage of interacting anelastic neutrons: 0.05%
+ 
+Total number of sampled photons: 10000000
+Total number of photons that make Compton: 12622.99
+Percentage of photons that make Compton: 0.13%
+ 
+Mean scattered photon energy for 4400 keV photons: 1689.45 keV
+Mean scattered electron energy for 4400 keV photons: 2712.01 keV
